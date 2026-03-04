@@ -63,6 +63,7 @@ title String
 rawText String @db.Text
 parsedData Json?
 roleCategory  String?
+topicMatrix Json?
 
 createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

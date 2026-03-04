@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import connectMongo from "./lib/mongo.js";
 import resumeRoutes from "./routes/resume.routes.js";
 import jdRouter from "./routes/jd.routes.js";
+import aiRouter from "./routes/ai.routes.js";
 
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/jd",jdRouter);  
+app.use("/api/ai",aiRouter);  
 app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("Sensei Backend Running 🔥");
