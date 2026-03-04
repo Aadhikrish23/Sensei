@@ -5,6 +5,7 @@ import { errorHandler } from "./middlewares/errors.middleware.js";
 import cookieParser from "cookie-parser";
 import connectMongo from "./lib/mongo.js";
 import resumeRoutes from "./routes/resume.routes.js";
+import jdRouter from "./routes/jd.routes.js";
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/resumes", resumeRoutes);
+app.use("/api/jd",jdRouter);  
 app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("Sensei Backend Running 🔥");
