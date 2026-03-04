@@ -1,0 +1,38 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# PyCharm
+.idea/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# FastAPI / uvicorn
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# pytest
+.pytest_cache/
+
+# coverage
+.coverage
+htmlcov/
