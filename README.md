@@ -38,6 +38,6 @@ Phase 1 (Local AI System)
 ✅ Authentication system  
 ✅ Resume module  
 ✅ Job description module  
-⬜ JD parser  
+✅ JD parser  
 ⬜ Resume-JD matching  
 ⬜ Interview engine
