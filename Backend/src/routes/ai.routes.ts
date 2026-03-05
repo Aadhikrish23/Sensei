@@ -4,9 +4,15 @@ import aiController from "../controllers/ai.controller.js";
 const aiRouter = express.Router();
 
 aiRouter.post(
-    "/parse",
+    "/parse-jd",
     authenticate,
     aiController.parseJDController
+
+);
+aiRouter.post(
+    "/parse-resume",
+    authenticate,
+    aiController.parseResumeController
 
 );
 

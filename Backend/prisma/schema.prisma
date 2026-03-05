@@ -45,6 +45,8 @@ model Resume {
   extractedText String @db.Text
   parsedData Json?   // future structured extraction
 
+  roleCategory  String?
+  topicMatrix Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
