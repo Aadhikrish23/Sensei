@@ -13,4 +13,17 @@ import aiService from "../services/ai.service.js";
   }
 };
 
-export default {parseJDController}
+ const parseResumeController = async (req: Request, res: Response) => {
+  try {
+    const { resumeId, userId } = req.body;
+
+    const parsedJD = await aiService.parseResume(resumeId, userId);
+
+    res.json(parsedJD);
+  } catch (error:any) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export default {parseJDController,parseResumeController}
