@@ -39,5 +39,5 @@ Phase 1 (Local AI System)
 ✅ Resume module  
 ✅ Job description module  
 ✅ JD parser  
-⬜ Resume-JD matching  
+✅ Resume-JD matching  
 ⬜ Interview engine
