@@ -7,7 +7,8 @@ import connectMongo from "./lib/mongo.js";
 import resumeRoutes from "./routes/resume.routes.js";
 import jdRouter from "./routes/jd.routes.js";
 import aiRouter from "./routes/ai.routes.js";
-
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 const app = express();
 const PORT = 5000;
@@ -27,6 +28,8 @@ app.get("/", (req, res) => {
   res.send("Sensei Backend Running 🔥");
 });
 
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const startserver = async () => {
   await connectMongo();
   app.listen(PORT, () => {

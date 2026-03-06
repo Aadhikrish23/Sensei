@@ -3,94 +3,207 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 
+from app.utils.skill_normalizer import normalize_resume_data
+
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Toggle AI calls during development
-USE_MOCK = True
+USE_MOCK = os.getenv("MOCK_FLAG");
 
 
-def build_prompt(text: str, doc_type: str):
-    return f"""
-Extract structured information from the following {doc_type}.
+def resume_mock_response():
+    return{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1-555-123-4567",
+  "location": "San Francisco, CA",
 
-Return ONLY valid JSON with this structure:
+  "role": "Backend Developer",
+  "seniority": "Mid-Level",
 
-{{
-  "role": "",
-  "seniority": "",
-  "skills": [],
-  "tools": [],
-  "frameworks": [],
-  "cloud": [],
-  "database": [],
-  "topics": [
-      {{"name": "", "category": ""}}
+  "skills": [
+    "Node.js",
+    "REST API"
   ],
-  "experience": "",
-  "education": ""
-}}
 
-{doc_type} text:
-{text}
-"""
+  "tools": [
+    "Docker",
+    "Git"
+  ],
 
+  "frameworks": [
+    "Express"
+  ],
 
-def mock_response():
-    return {
-        "role": "Backend Developer",
-        "seniority": "Mid-Level",
-        "skills": ["Node.js", "REST API"],
-        "tools": ["Docker"],
-        "frameworks": ["Express"],
-        "cloud": ["AWS"],
-        "database": ["PostgreSQL"],
-        "topics": [
-            {"name": "Node.js", "category": "backend"},
-            {"name": "REST API", "category": "backend"},
-            {"name": "PostgreSQL", "category": "database"},
-            {"name": "Docker", "category": "devops"},
-            {"name": "AWS", "category": "cloud"}
-        ],
-        "experience": "2+ years",
-        "education": "Bachelor's in Computer Science"
+  "cloud": [
+    "AWS"
+  ],
+
+  "database": [
+    "PostgreSQL"
+  ],
+
+  "topics": [
+    {
+      "name": "Node.js",
+      "category": "backend"
+    },
+    {
+      "name": "REST API",
+      "category": "backend"
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "database"
+    },
+    {
+      "name": "Docker",
+      "category": "devops"
+    },
+    {
+      "name": "AWS",
+      "category": "cloud"
     }
+  ],
 
+  "projects": [
+    {
+      "name": "E-commerce Backend",
+      "description": "Built REST APIs for an e-commerce platform handling product catalog, orders, and user authentication.",
+      "technologies": [
+        "Node.js",
+        "Express",
+        "PostgreSQL"
+      ]
+    },
+    {
+      "name": "Task Management API",
+      "description": "Developed a task management backend with authentication and role-based access control.",
+      "technologies": [
+        "Node.js",
+        "Express",
+        "MongoDB"
+      ]
+    }
+  ],
+
+  "work_experience": [
+    {
+      "company": "TechCorp",
+      "role": "Backend Developer",
+      "duration": "2022 - Present",
+      "responsibilities": [
+        "Developed REST APIs using Node.js and Express",
+        "Optimized PostgreSQL queries for performance",
+        "Deployed services using Docker and AWS"
+      ]
+    }
+  ],
+
+  "achievements": [
+    "Reduced API latency by 40%",
+    "Improved database query performance by 30%"
+  ],
+
+  "experience": "2+ years",
+  "education": "Bachelor's in Computer Science"
+}
+
+def jd_mock_response():
+    return {
+  "role": "Backend Developer",
+  "seniority": "Mid-Level",
+
+  "skills": [
+    "Node.js",
+    "REST API",
+    "Microservices"
+  ],
+
+  "tools": [
+    "Docker",
+    "Git"
+  ],
+
+  "frameworks": [
+    "Express"
+  ],
+
+  "cloud": [
+    "AWS"
+  ],
+
+  "database": [
+    "PostgreSQL"
+  ],
+
+  "topics": [
+    {
+      "name": "Node.js",
+      "category": "backend"
+    },
+    {
+      "name": "REST API",
+      "category": "backend"
+    },
+    {
+      "name": "Microservices",
+      "category": "backend"
+    },
+    {
+      "name": "Docker",
+      "category": "devops"
+    },
+    {
+      "name": "AWS",
+      "category": "cloud"
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "database"
+    }
+  ],
+
+  "responsibilities": [
+    "Design and develop scalable backend services",
+    "Build RESTful APIs for internal and external applications",
+    "Collaborate with frontend teams to integrate APIs",
+    "Optimize database queries and performance",
+    "Deploy services using containerization tools"
+  ],
+
+  "qualifications": [
+    "Strong experience with Node.js and Express",
+    "Understanding of REST API design principles",
+    "Experience with PostgreSQL or other relational databases",
+    "Familiarity with Docker and containerized deployments",
+    "Knowledge of cloud platforms such as AWS"
+  ],
+
+  "experience_required": "2+ years backend development experience",
+
+  "education_required": "Bachelor's degree in Computer Science or related field"
+}
 
 def call_openai(prompt: str):
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=[
-            {"role": "system", "content": "You are an expert HR analyst."},
+            {"role": "system", "content": "You are an expert HR analyst. Always return valid JSON. Return ONLY JSON. No markdown. No explanation."
+                                          "If a field is not present in the document return null or []. Do not invent information."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.2
+        response_format={"type": "json-object"},
+        temperature=0.2,
+        max_tokens=1200
+
     )
 
     content = response.choices[0].message.content
     return json.loads(content)
 
 
-def parse_job_description_with_ai(raw_text: str):
-    try:
-        if USE_MOCK:
-            return mock_response()
-
-        prompt = build_prompt(raw_text, "job description")
-        return call_openai(prompt)
-
-    except Exception as e:
-        return {"error": str(e)}
 
 
-def parse_resume_with_ai(raw_text: str):
-    try:
-        if USE_MOCK:
-            return mock_response()
-
-        prompt = build_prompt(raw_text, "resume")
-        return call_openai(prompt)
-
-    except Exception as e:
-        return {"error": str(e)}

@@ -26,4 +26,39 @@ import aiService from "../services/ai.service.js";
   }
 };
 
-export default {parseJDController,parseResumeController}
+
+/**
+ * @swagger
+ * /api/ai/match-resume-jd:
+ *   post:
+ *     summary: Match resume with job description
+ *     tags: [AI]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resumeId:
+ *                 type: string
+ *               jdId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Match result
+ */
+ const matchJDResumeController = async (req: Request, res: Response) => {
+  try {
+  const { resumeId, jdId } = req.body;
+const userId = (req as any).user.id;
+    const matchedresult = await aiService.match_jd_resume(resumeId, jdId,userId);
+
+    res.json(matchedresult);
+  } catch (error:any) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export default {parseJDController,parseResumeController,matchJDResumeController}

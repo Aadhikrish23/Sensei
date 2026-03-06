@@ -16,4 +16,10 @@ aiRouter.post(
 
 );
 
+aiRouter.post(
+    "/match-resume-jd",
+    authenticate,
+    aiController.matchJDResumeController
+
+);
 export default aiRouter;

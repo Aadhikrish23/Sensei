@@ -1,12 +1,11 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.services.openai_service import parse_resume_with_ai
-from app.schemas.resume_schema import ResumeParseResponse
+from app.schemas.resume_schema import ResumeParseResponse, ResumeRequest
+from app.services.resume_parser import parse_resume_with_ai
 
 router = APIRouter()
 
-class ResumeRequest(BaseModel):
-    rawText:str
+
 
 
 @router.post("/parse-resume",response_model=ResumeParseResponse)

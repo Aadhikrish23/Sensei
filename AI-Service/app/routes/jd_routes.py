@@ -1,16 +1,14 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.services.openai_service import parse_job_description_with_ai
-from app.schemas.jd_schema import JDParsedResponse
+from app.schemas.jd_schema import  JDRequest , JDParseResponse
 from app.services.jd_cleaner import clean_job_description
+from app.services.jd_parser import parse_job_description_with_ai
+
 router = APIRouter()
 
 
-class JDRequest(BaseModel):
-    rawText: str
 
-
-@router.post("/parse-jd", response_model=JDParsedResponse)
+@router.post("/parse-jd", response_model=JDParseResponse)
 def parse_job_description(data: JDRequest):
     cleaned_text = clean_job_description(data.rawText)
     result = parse_job_description_with_ai(cleaned_text)
