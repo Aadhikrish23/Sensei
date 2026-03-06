@@ -8,7 +8,7 @@ import resumeRoutes from "./routes/resume.routes.js";
 import jdRouter from "./routes/jd.routes.js";
 import aiRouter from "./routes/ai.routes.js";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./config/swagger.js";
+import {swaggerSpec} from "./docs/swagger.js";
 
 const app = express();
 const PORT = 5000;

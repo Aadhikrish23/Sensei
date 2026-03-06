@@ -4,77 +4,57 @@ from app.utils.skill_normalizer import normalize_resume_data
 
 def build_resume_prompt(text: str):
     return f"""
-You are an expert technical recruiter and resume analyst.
+You are a resume parsing engine.
 
-Extract structured information from the following resume.
+Extract information ONLY from the provided resume text.
 
-Return ONLY valid JSON.
+Rules:
+- DO NOT invent information
+- If information is missing, return null
+- Do not guess
+- Do not fabricate projects or experience
+- Only extract what exists in the resume
+- Return ONLY valid JSON
+- Do not include explanations
+- Do not include markdown
+- Do not include text outside JSON
 
-Do not include explanations.
-
-If a field is missing, return null or an empty list.
-
-JSON structure:
+Return JSON in this structure:
 
 {{
   "name": "",
   "email": "",
   "phone": "",
   "location": "",
-
-  "role": "",
-  "seniority": "",
-
   "skills": [],
-  "tools": [],
   "frameworks": [],
+  "tools": [],
   "cloud": [],
   "database": [],
-
-  "topics": [
-    {{"name": "", "category": ""}}
-  ],
-
-  "projects": [
-    {{
-      "name": "",
-      "description": "",
-      "technologies": []
-    }}
-  ],
-
-  "work_experience": [
-    {{
-      "company": "",
-      "role": "",
-      "duration": "",
-      "responsibilities": []
-    }}
-  ],
-
-  "achievements": [],
-
+  "education": "",
   "experience": "",
-  "education": ""
+  "work_experience": [],
+  "projects": [],
+  "achievements": []
 }}
 
-Resume text:
+Resume Text:
 {text}
 """
+
 
 def parse_resume_with_ai(raw_text: str):
     try:
         if USE_MOCK:
             return resume_mock_response()
 
-        prompt = build_resume_prompt(raw_text, "resume")
+        prompt = build_resume_prompt(raw_text)
 
         parsed = call_openai(prompt)
 
         normalized = normalize_resume_data(parsed)
 
         return normalized
-
 
     except Exception as e:
         return {"error": str(e)}

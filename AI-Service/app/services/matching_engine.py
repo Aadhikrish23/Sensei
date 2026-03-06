@@ -1,49 +1,68 @@
 from app.services.openai_service import call_openai, USE_MOCK, jd_mock_response
+from app.utils.skill_normalizer import normalize_skill_list
 
 
-def calculate_match(resume_skills, jd_skills):
-    resume_set = set(resume_skills)
-    jd_set = set(jd_skills)
+WEIGHTS = {
+    "skills": 3,
+    "frameworks": 2,
+    "database": 2,
+    "cloud": 2,
+    "tools": 1
+}
 
-    matched =sorted(list(jd_set.intersection(resume_set)))
-    missing = sorted(list(jd_set-resume_set))
-    extra = sorted(list(resume_set-jd_set))
 
-    if len(jd_set) == 0:
+def build_weighted_skill_pool(data: dict):
+
+    weighted = {}
+
+    for category, weight in WEIGHTS.items():
+
+        skills = normalize_skill_list(data.get(category, []))
+
+        for skill in skills:
+            weighted[skill] = max(weighted.get(skill, 0), weight)
+
+    return weighted
+
+
+def calculate_match(resume_data: dict, jd_data: dict):
+
+    resume_pool = build_weighted_skill_pool(resume_data)
+    jd_pool = build_weighted_skill_pool(jd_data)
+
+    matched = []
+    missing = []
+
+    total_weight = 0
+    matched_weight = 0
+
+    for skill, weight in jd_pool.items():
+
+        total_weight += weight
+
+        if skill in resume_pool:
+            matched.append(skill)
+            matched_weight += weight
+        else:
+            missing.append(skill)
+
+    if total_weight == 0:
         score = 0
     else:
-        score = int((len(matched) / len(jd_set)) * 100)
+        score = int((matched_weight / total_weight) * 100)
 
     return {
-        "match_score": score,
-        "matched_skills": matched,
-        "missing_skills": missing,
-        "extra_skills": extra
+        "matchPercentage": score,
+        "strongSkills": sorted(matched),
+        "missingSkills": sorted(missing),
+        "partiallyMatchedSkills": []
     }
 
-def build_skill_pool(data: dict):
-    skills = []
-
-    skills.extend(data.get("skills", []))
-    skills.extend(data.get("tools", []))
-    skills.extend(data.get("frameworks", []))
-    skills.extend(data.get("cloud", []))
-    skills.extend(data.get("database", []))
-
-    # topics are objects → extract the name
-    topics = data.get("topics", [])
-    for topic in topics:
-        if isinstance(topic, dict):
-            if topic.get("name"):
-                skills.append(topic.get("name"))
-
-    return skills
 
 def build_matching_prompt(match_result: dict):
 
-    matched = match_result.get("matched_skills", [])
-    missing = match_result.get("missing_skills", [])
-    extra = match_result.get("extra_skills", [])
+    matched = match_result.get("strongSkills", [])
+    missing = match_result.get("missingSkills", [])
 
     return f"""
 You are an expert technical interview coach.
@@ -55,9 +74,6 @@ Matched Skills:
 
 Missing Skills:
 {missing}
-
-Additional Skills:
-{extra}
 
 Based on this information generate:
 
@@ -72,9 +88,11 @@ Return ONLY valid JSON in this format:
 }}
 """
 
+
 def generate_ai_insights(match_result: dict):
 
     prompt = build_matching_prompt(match_result)
+
     if USE_MOCK:
         return jd_mock_response()
 
@@ -82,12 +100,9 @@ def generate_ai_insights(match_result: dict):
 
     return ai_result
 
+
 def match_resume_to_jd(resume_data: dict, jd_data: dict):
-
-    resume_skills = build_skill_pool(resume_data)
-    jd_skills = build_skill_pool(jd_data)
-
-    match_result = calculate_match(resume_skills, jd_skills)
+    match_result = calculate_match(resume_data, jd_data)
 
     ai_insights = generate_ai_insights(match_result)
 

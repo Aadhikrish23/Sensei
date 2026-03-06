@@ -27,27 +27,6 @@ import aiService from "../services/ai.service.js";
 };
 
 
-/**
- * @swagger
- * /api/ai/match-resume-jd:
- *   post:
- *     summary: Match resume with job description
- *     tags: [AI]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               resumeId:
- *                 type: string
- *               jdId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Match result
- */
  const matchJDResumeController = async (req: Request, res: Response) => {
   try {
   const { resumeId, jdId } = req.body;

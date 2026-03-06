@@ -16,11 +16,11 @@ async function parseJobDescription(jdId: string, userId: string) {
     throw new Error("JD not found");
   }
 
-  if (jd.parsedData) {
-    return {
-      parsedData: jd.parsedData,
-    };
-  }
+  // if (jd.parsedData) {
+  //   return {
+  //     parsedData: jd.parsedData,
+  //   };
+  // }
 
   // 2️⃣ Call FastAPI AI service
   const response = await aiClient.post("/parse-jd", {
@@ -57,11 +57,11 @@ async function parseResume(resumeId: string, userId: string) {
     throw new Error("JD not found");
   }
 
-  if (Resume.parsedData) {
-    return {
-      parsedData: Resume.parsedData,
-    };
-  }
+  // if (Resume.parsedData) {
+  //   return {
+  //     parsedData: Resume.parsedData,
+  //   };
+  // }
   const response = await aiClient.post("/parse-resume", {
     rawText: Resume.extractedText,
   });
@@ -118,9 +118,9 @@ async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
       jdVersionHash,
     },
   });
-  if (existingMatch) {
-    return existingMatch;
-  }
+  // if (existingMatch) {
+  //   return existingMatch;
+  // }
 
   const aiResponse = await aiClient.post("/match-resume-jd", {
     resume_data: resume.parsedData,
@@ -129,16 +129,17 @@ async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
 
   const aiResult = aiResponse.data;
 
-  // 4️⃣ Prepare fields for DB
-  const strongSkills = aiResult.matched_skills || [];
-  const missingSkills = aiResult.missing_skills || [];
+ const strongSkills = aiResult.strongSkills || [];
+const missingSkills = aiResult.missingSkills || [];
 
-  // Optional derived field
-  const partiallyMatchedSkills: string[] = [];
+const partiallyMatchedSkills = aiResult.partiallyMatchedSkills || [];
 
-  const improvementSuggestions = aiResult.improvement_suggestions || [];
+const improvementSuggestions =
+  aiResult.improvement_suggestions ||
+  aiResult.improvementSuggestions ||
+  [];
 
-  const matchPercentage = aiResult.match_score || 0;
+const matchPercentage = aiResult.matchPercentage || 0;
 
   // 5️⃣ Save Match Result
   const matchResult = await prisma.resumeJDMatch.upsert({
