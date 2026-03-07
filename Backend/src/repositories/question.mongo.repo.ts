@@ -5,7 +5,7 @@ type CreateQuestionInput ={
   questionNumber: number;
   questionText: string;
   questionType: "THEORY" | "APPLIED";
-  difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  difficulty: "easy"| "medium"|"hard";
   skillTags: string[];
   roleCategory: string;
   
@@ -33,5 +33,18 @@ async function getQuestion(data:GetQuestionInput) {
   return getquestion;
 }
 
+async function getSessionQuestions(sessionId: string) {
 
-export default {createQuestion,getQuestion}
+  const questions = await QuestionLogModel.find({
+    sessionId
+  }).sort({ questionNumber: 1 });
+
+  return questions.map((q) => ({
+    questionText: q.questionText,
+    skillTags: q.skillTags,
+    difficulty: q.difficulty
+  }));
+
+}
+
+export default {createQuestion,getQuestion,getSessionQuestions}

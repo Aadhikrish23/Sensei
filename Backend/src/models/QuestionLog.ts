@@ -5,7 +5,7 @@ export interface IQuestionLog extends Document {
   questionNumber: number;
   questionText: string;
   questionType: "THEORY" | "APPLIED";
-  difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  difficulty: "easy"| "medium"|"hard";
   skillTags: string[];
   roleCategory: string;
   createdAt: Date;
@@ -34,7 +34,7 @@ const QuestionLogSchema = new Schema<IQuestionLog>(
     },
     difficulty: {
       type: String,
-      enum: ["BEGINNER", "INTERMEDIATE", "ADVANCED"],
+      enum: ["easy", "medium", "hard"],
       required: true,
     },
     skillTags: {

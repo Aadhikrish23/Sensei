@@ -84,34 +84,32 @@ enum SessionDifficulty {
 }
 
 model InterviewSession {
-  id String @id @default(uuid())
+  id             String   @id @default(uuid())
 
-  userId String
-  resumeId String
-  jdId String
+  userId         String
+  resumeId       String
+  jdId           String
 
-  roleCategory String
-  difficulty SessionDifficulty
+  roleCategory   String
+  
+  difficulty     String
 
-  totalQuestions Int @default(0)
-  completed Boolean @default(false)
+  totalQuestions Int      @default(0)
 
-  startedAt DateTime @default(now())
-  endedAt DateTime?
-  durationSeconds Int?
+  skillGraph     Json?
 
-  createdAt DateTime @default(now())
+  decision       String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  jobDescription JobDescription @relation(fields: [jdId], references: [id], onDelete: Cascade)
+  completed      Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume         Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  jobDescription JobDescription  @relation(fields: [jdId], references: [id], onDelete: Cascade)
 
   sessionSummary SessionSummary?
-
-  @@index([userId])
-  @@index([roleCategory])
-  @@index([userId, roleCategory])
-  @@index([completed])
 }
 
 model SessionSummary {
