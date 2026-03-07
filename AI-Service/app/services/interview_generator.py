@@ -1,8 +1,8 @@
 from app.services.openai_service import call_openai
+import json
 
 
 async def generate_question(data):
-
     strong_skills = data.matchAnalysis.strongSkills
     missing_skills = data.matchAnalysis.missingSkills
 
@@ -36,3 +36,44 @@ async def generate_question(data):
     response = call_openai(prompt)
 
     return response
+
+
+async def evaluate_answer(data):
+    prompt = f"""
+You are a senior technical interviewer.
+
+Evaluate the candidate's answer.
+
+Question:
+{data.questionText}
+
+Candidate Answer:
+{data.answerText}
+
+Question Type: {data.questionType}
+Difficulty: {data.difficulty}
+
+Skills involved:
+{data.skillTags}
+
+Evaluate the answer on a scale of 0–10.
+
+Return ONLY JSON:
+
+{{
+ "evaluation": {{
+    "technical": number,
+    "depth": number,
+    "communication": number,
+    "relevance": number
+ }},
+ "feedback": {{
+    "strengths": ["..."],
+    "weaknesses": ["..."],
+    "improvements": ["..."]
+ }}
+}}
+"""
+
+    result = call_openai(prompt)
+    return result

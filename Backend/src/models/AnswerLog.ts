@@ -56,6 +56,7 @@ const AnswerLogSchema = new Schema<IAnswerLog>(
       type: Number,
       required: true,
       min: 0,
+      default: 0
     },
 
     submittedAt: {

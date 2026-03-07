@@ -114,6 +114,7 @@ const EvaluationLogSchema = new Schema<IEvaluationLog>(
     evaluatedAt: {
       type: Date,
       required: true,
+      default: Date.now
     },
   },
   {

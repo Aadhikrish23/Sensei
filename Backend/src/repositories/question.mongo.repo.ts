@@ -10,6 +10,10 @@ type CreateQuestionInput ={
   roleCategory: string;
   
 }
+type GetQuestionInput = {
+sessionId:string;
+questionNumber:number;
+}
 
 
 async function createQuestion(data:CreateQuestionInput){
@@ -20,6 +24,14 @@ async function createQuestion(data:CreateQuestionInput){
 
 }
 
+async function getQuestion(data:GetQuestionInput) {
+  
+  const getquestion = await QuestionLogModel.findOne({
+    sessionId:data.sessionId,
+    questionNumber:data.questionNumber
+  });
+  return getquestion;
+}
 
 
-export default {createQuestion}
+export default {createQuestion,getQuestion}

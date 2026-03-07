@@ -69,3 +69,35 @@
  *       500:
  *         description: Internal server error
  */
+/**
+ * @swagger
+ * /api/interview/answer:
+ *   post:
+ *     summary: Submit answer for an interview question
+ *     tags: [Interview]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sessionId
+ *               - questionNumber
+ *               - answerText
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *                 example: "uuid"
+ *               questionNumber:
+ *                 type: number
+ *                 example: 1
+ *               answerText:
+ *                 type: string
+ *                 example: "The Node.js event loop handles asynchronous callbacks..."
+ *     responses:
+ *       200:
+ *         description: Answer evaluated successfully
+ */
