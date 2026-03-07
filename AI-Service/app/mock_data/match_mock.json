@@ -1,0 +1,10 @@
+{
+  "matchPercentage": 75,
+  "strongSkills": ["JavaScript", "React"],
+  "missingSkills": ["AWS"],
+  "partiallyMatchedSkills": [],
+  "improvementSuggestions": [
+    "Learn AWS",
+    "Improve REST API design knowledge"
+  ]
+}

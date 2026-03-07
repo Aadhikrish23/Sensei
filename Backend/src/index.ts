@@ -9,6 +9,7 @@ import jdRouter from "./routes/jd.routes.js";
 import aiRouter from "./routes/ai.routes.js";
 import swaggerUi from "swagger-ui-express";
 import {swaggerSpec} from "./docs/swagger.js";
+import interviewRouter from "./routes/interview.routes.js";
 
 const app = express();
 const PORT = 5000;
@@ -23,6 +24,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/jd",jdRouter);  
 app.use("/api/ai",aiRouter);  
+app.use("/api/interview",interviewRouter)
 app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("Sensei Backend Running 🔥");

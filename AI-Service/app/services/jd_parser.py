@@ -1,4 +1,5 @@
-from app.services.openai_service import USE_MOCK, jd_mock_response, call_openai
+from app.services.openai_service import USE_MOCK,  call_openai
+from app.utils.mock_loader import load_mock
 from app.utils.skill_normalizer import normalize_jd_data
 
 def build_jd_prompt(text: str):
@@ -43,7 +44,7 @@ Job description text:
 def parse_job_description_with_ai(raw_text: str):
     try:
         if USE_MOCK:
-            return jd_mock_response()
+            return load_mock("jd_mock.json")
 
         prompt = build_jd_prompt(raw_text)
         parsed = call_openai(prompt)

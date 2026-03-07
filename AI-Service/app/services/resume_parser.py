@@ -1,4 +1,5 @@
-from app.services.openai_service import USE_MOCK, call_openai, resume_mock_response
+from app.services.openai_service import USE_MOCK, call_openai
+from app.utils.mock_loader import load_mock
 from app.utils.skill_normalizer import normalize_resume_data
 
 
@@ -46,7 +47,7 @@ Resume Text:
 def parse_resume_with_ai(raw_text: str):
     try:
         if USE_MOCK:
-            return resume_mock_response()
+            return load_mock("resume_mock.json")
 
         prompt = build_resume_prompt(raw_text)
 
