@@ -174,6 +174,8 @@ const matchPercentage = aiResult.matchPercentage || 0;
   });
   return matchResult;
 }
+
+
 export default { parseJobDescription, parseResume, match_jd_resume };
 
 function generateHash(data: any) {

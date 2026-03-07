@@ -1,0 +1,19 @@
+{
+  "role": "Full Stack Developer",
+  "seniority": "Mid-level",
+  "skills": ["JavaScript", "Node.js", "React"],
+  "frameworks": ["React", "Express"],
+  "tools": ["Git"],
+  "cloud": ["AWS"],
+  "database": ["MongoDB", "PostgreSQL"],
+  "topics": [],
+  "responsibilities": [
+    "Build REST APIs",
+    "Develop frontend using React"
+  ],
+  "qualifications": [
+    "Strong JavaScript knowledge"
+  ],
+  "experience_required": "2-4 years",
+  "education_required": "Computer Science degree"
+}

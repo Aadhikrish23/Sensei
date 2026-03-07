@@ -1,0 +1,23 @@
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "phone": "+91 9999999999",
+  "location": "Bangalore",
+  "skills": ["JavaScript", "TypeScript"],
+  "frameworks": ["React", "Node.js"],
+  "tools": ["Git", "Postman"],
+  "cloud": [],
+  "database": ["MongoDB"],
+  "education": "B.E Computer Science",
+  "experience": "2 years MERN developer",
+  "work_experience": [
+    {
+      "role": "Software Engineer",
+      "company": "ABC Tech",
+      "duration": "2023-Present",
+      "responsibilities": ["Developed MERN stack applications"]
+    }
+  ],
+  "projects": [],
+  "achievements": []
+}

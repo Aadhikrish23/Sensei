@@ -1,4 +1,5 @@
-from app.services.openai_service import call_openai, USE_MOCK, jd_mock_response
+from app.services.openai_service import call_openai, USE_MOCK
+from app.utils.mock_loader import load_mock
 from app.utils.skill_normalizer import normalize_skill_list
 
 
@@ -94,7 +95,7 @@ def generate_ai_insights(match_result: dict):
     prompt = build_matching_prompt(match_result)
 
     if USE_MOCK:
-        return jd_mock_response()
+        return load_mock("match_mock.json")
 
     ai_result = call_openai(prompt)
 
