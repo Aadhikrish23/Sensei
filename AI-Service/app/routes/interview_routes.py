@@ -14,6 +14,7 @@ from app.schemas.interview_schema import (
     GenerateNextQuestionResponse,
     GenerateNextQuestionRequest
 )
+from app.services.interview_report_service import generate_final_report
 
 router = APIRouter()
 
@@ -47,3 +48,10 @@ async def generate_next_question_endpoint(request: GenerateNextQuestionRequest):
     )
 
     return result
+
+@router.post("/final-report")
+async def final_report(data: dict):
+
+    report = generate_final_report(data)
+
+    return report

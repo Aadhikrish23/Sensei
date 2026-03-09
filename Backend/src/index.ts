@@ -11,6 +11,7 @@ import swaggerUi from "swagger-ui-express";
 import {swaggerSpec} from "./docs/swagger.js";
 import interviewRouter from "./routes/interview.routes.js";
 import sessionSummaryRouter from "./routes/sessionSummary.routes.js";
+import reportRouter from "./routes/finalReport.routes.js";
 
 const app = express();
 const PORT = 5000;
@@ -27,6 +28,7 @@ app.use("/api/jd",jdRouter);
 app.use("/api/ai",aiRouter);  
 app.use("/api/interview",interviewRouter);
 app.use("/api/session-summary",sessionSummaryRouter);
+app.use("/api/report",reportRouter);
 app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("Sensei Backend Running 🔥");

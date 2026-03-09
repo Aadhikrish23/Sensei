@@ -108,6 +108,9 @@ model InterviewSession {
   endedAt DateTime?
   durationSeconds Int?
 
+  finalReport Json?
+  reportGeneratedAt DateTime?
+
   user User @relation(fields: [userId], references: [id])
   resume Resume @relation(fields: [resumeId], references: [id])
   jobDescription JobDescription @relation(fields: [jdId], references: [id])
