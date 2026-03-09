@@ -84,30 +84,33 @@ enum SessionDifficulty {
 }
 
 model InterviewSession {
-  id             String   @id @default(uuid())
 
-  userId         String
-  resumeId       String
-  jdId           String
+  id String @id @default(uuid())
 
-  roleCategory   String
-  
-  difficulty     String
+  userId String
+  resumeId String
+  jdId String
 
-  totalQuestions Int      @default(0)
+  roleCategory String
+  difficulty String
 
-  skillGraph     Json?
+  totalQuestions Int @default(0)
 
-  decision       String?
+  skillGraph Json?
 
-  completed      Boolean  @default(false)
+  decision String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  completed Boolean @default(false)
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume         Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  jobDescription JobDescription  @relation(fields: [jdId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  endedAt DateTime?
+  durationSeconds Int?
+
+  user User @relation(fields: [userId], references: [id])
+  resume Resume @relation(fields: [resumeId], references: [id])
+  jobDescription JobDescription @relation(fields: [jdId], references: [id])
 
   sessionSummary SessionSummary?
 }

@@ -7,7 +7,7 @@ const sessionSummaryRouter = express.Router();
 sessionSummaryRouter.post(
   "/interview/:sessionId/complete",
   authenticate,
-  sessionSummaryController.generateSessionSummary
+  sessionSummaryController.completeInterviewSession
 );
 
 export default sessionSummaryRouter;

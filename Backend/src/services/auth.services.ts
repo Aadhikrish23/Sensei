@@ -39,6 +39,7 @@ async function createUser(email: string, password: string) {
     isEmailVerified: user.isEmailVerified,
     createdAt: user.createdAt,
     verificationLink,
+    token
   };
 }
 

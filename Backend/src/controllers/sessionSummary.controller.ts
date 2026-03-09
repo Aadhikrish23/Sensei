@@ -1,37 +1,24 @@
-import { Request, Response, NextFunction } from "express";
-
-import { generateSessionSummaryForSession } 
-from "../services/session-summary/sessionSummary.service.js";
-
-
-const generateSessionSummary = async (
+import { Request, Response } from "express"
+import sessionSummaryService from "../services/session-summary/sessionSummary.service.js"
+ const completeInterviewSession = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
-
   try {
+    const sessionId = req.params.sessionId as string
 
-    const { sessionId } = req.params;
-
-    if (!sessionId || typeof(sessionId) != "string")  {
-      throw new Error("Session ID is required");
-    }
-
-    const summary = await generateSessionSummaryForSession(sessionId);
+    const summary = await sessionSummaryService.generateSessionSummary(sessionId)
 
     return res.status(200).json({
-      Status: "SUCCESS",
-      Data: summary
-    });
-
-  } catch (error) {
-
-    next(error);
-
+      status: "SUCCESS",
+      data: summary
+    })
+  } catch (error: any) {
+    return res.status(500).json({
+      status: "ERROR",
+      message: error.message
+    })
   }
+}
 
-};
-
-
-export default { generateSessionSummary };
+export default {completeInterviewSession}

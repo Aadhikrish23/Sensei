@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import interviewService from "../services/interview.service.js";
+import sessionSummaryService from "../services/session-summary/sessionSummary.service.js";
 
 const startInterview = async (
   req: Request,
@@ -30,7 +31,9 @@ const startInterview = async (
   }
 };
 
-async function submitInterviewAnswer(req: Request, res: Response) {
+const submitInterviewAnswer = async (req: Request,
+  res: Response,
+  next: NextFunction)=> {
   try {
 
     if (!req.user) {
@@ -61,11 +64,35 @@ async function submitInterviewAnswer(req: Request, res: Response) {
 
   } catch (error: any) {
 
-    return res.status(500).json({
-      status: "ERROR",
-      message: error.message
-    });
+    next(error)
 
   }
 }
-export default {startInterview,submitInterviewAnswer}
+
+const endInterview = async (req:Request,res:Response,next:NextFunction) => {
+  try {
+     if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const userId = req.user.id;
+    const sessionId = req.params.sessionId as string;
+
+    await interviewService.endInterviewSession(userId, sessionId);
+
+    const summary =
+      await sessionSummaryService.generateSessionSummary(sessionId);
+
+    return res.json({
+      status: "SUCCESS",
+      message: "Interview ended",
+      summary
+    });
+
+  } catch (error: any) {
+
+    next(error)
+
+  }
+}
+export default {startInterview,submitInterviewAnswer,endInterview}

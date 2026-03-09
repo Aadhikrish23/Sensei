@@ -1,40 +1,37 @@
-export interface EvaluationRecord {
+export interface EvaluationLogInput {
   technical: number
   depth: number
   communication: number
   relevance: number
-
   codingScore?: number
-
   skillTags: string[]
-
-  strengths?: string[]
-  weaknesses?: string[]
 }
 
-export interface QuestionRecord {
-  type: "THEORY" | "APPLIED"
-
+export interface QuestionLogInput {
+  type: "THEORY" | "CODING"
   skillTags: string[]
-
-  difficulty?: "EASY" | "MEDIUM" | "HARD"
 }
 
+export interface SkillGraphNode {
+  skill: string
+  confidence: number
+  scores: number[]
+  questions_asked: number
+}
 
 export interface SessionSummaryInput {
-  evaluations: EvaluationRecord[]
-
-  questions: QuestionRecord[]
-
-  skillGraph: string[]
+  evaluations: EvaluationLogInput[]
+  questions: QuestionLogInput[]
+  skillGraph: SkillGraphNode[]
+  jdSkills: string[]
 }
 
-export interface SessionSummaryResult {
+export interface SessionSummaryOutput {
   technicalAvg: number
   depthAvg: number
   communicationAvg: number
-  codingAvg: number
   relevanceAvg: number
+  codingAvg: number
 
   topicCoverageScore: number
   consistencyScore: number
@@ -47,17 +44,4 @@ export interface SessionSummaryResult {
 
   theoryQuestionCount: number
   codingQuestionCount: number
-}
-
-export interface SkillAnalysisResult {
-  strong: string[]
-  weak: string[]
-}
-
-export interface CategoryAverages {
-  technicalAvg: number
-  depthAvg: number
-  communicationAvg: number
-  codingAvg: number
-  relevanceAvg: number
 }

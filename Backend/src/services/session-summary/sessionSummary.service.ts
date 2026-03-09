@@ -1,127 +1,109 @@
-import prisma from "../../lib/prisma.js"
-
-import { EvaluationLogModel } from "../../models/EvaluationLog.js"
-import { QuestionLogModel } from "../../models/QuestionLog.js"
-
-import { Prisma } from "@prisma/client"
-
-import {
-  SessionSummaryInput
-} from "../../types/sessionSummary.types.js"
-
-import {
-  generateSessionSummary
-} from "./sessionSummary.engine.js"
+import prisma from "../../lib/prisma.js";
+import { EvaluationLogModel } from "../../models/EvaluationLog.js";
+import { QuestionLogModel } from "../../models/QuestionLog.js";
 
 
-export async function generateSessionSummaryForSession(
-  sessionId: string
-) {
-
-  // 1️⃣ Fetch interview session
+import sessionSummaryEngine from "./sessionSummary.engine.js";
+import { SessionSummaryInput } from "../../types/sessionSummary.types.js";
+ const generateSessionSummary = async (sessionId: string) => {
 
   const session = await prisma.interviewSession.findUnique({
-    where: { id: sessionId }
+    where: { id: sessionId },
+    include: {
+      sessionSummary: true,
+      jobDescription: true
+    }
   })
 
   if (!session) {
     throw new Error("Interview session not found")
   }
 
+  if (session.sessionSummary) {
+    throw new Error("Session summary already generated")
+  }
 
-  // 2️⃣ Fetch evaluation logs
+  // Fetch Mongo logs
+  const evaluationLogs = await EvaluationLogModel.find({ sessionId }).lean()
+  const questionLogs = await QuestionLogModel.find({ sessionId }).lean()
 
-  const evaluationLogs = await EvaluationLogModel.find({
-    sessionId
-  }).lean()
-
-
-  // 3️⃣ Fetch question logs
-
-  const questionLogs = await QuestionLogModel.find({
-    sessionId
-  }).lean()
-
-
-  // 4️⃣ Map evaluations → engine format
+  if (!evaluationLogs.length) {
+    throw new Error("No evaluation logs found")
+  }
 
   const evaluations = evaluationLogs.map((e: any) => ({
-    technical: e.technical ?? 0,
-    depth: e.depth ?? 0,
-    communication: e.communication ?? 0,
-    relevance: e.relevance ?? 0,
-
-    codingScore: e.codeCorrectness ?? undefined,
-
-    skillTags: e.skillTags ?? [],
-
-    strengths: e.strengths ?? [],
-    weaknesses: e.weaknesses ?? []
+    technical: e.technical,
+    depth: e.depth,
+    communication: e.communication,
+    relevance: e.relevance,
+    codingScore: e.codeCorrectness,
+    skillTags: e.skillTags ?? []
   }))
 
-
-  // 5️⃣ Map questions → engine format
-
   const questions = questionLogs.map((q: any) => ({
-    type: q.questionType as "THEORY" | "APPLIED",
+    type: q.questionType,
     skillTags: q.skillTags ?? []
   }))
 
+  const skillGraph = Object.entries(session.skillGraph ?? {}).map(
+    ([skill, data]: any) => ({
+      skill,
+      confidence: data.confidence,
+      scores: data.scores,
+      questions_asked: data.questions_asked
+    })
+  )
 
-  // 6️⃣ Build engine input
+  const jdParsed = session.jobDescription.parsedData as any
+
+const jdSkills: string[] = jdParsed?.skills ?? []
 
   const engineInput: SessionSummaryInput = {
     evaluations,
     questions,
-    skillGraph: (session.skillGraph ?? []) as string[]
+    skillGraph,
+    jdSkills
   }
 
+  const summary = sessionSummaryEngine.computeSessionSummary(engineInput)
 
-  // 7️⃣ Run summary engine
-
-  const summaryResult = generateSessionSummary(engineInput)
-
-
-  // 8️⃣ Insert session summary
-
-  const summary = await prisma.sessionSummary.create({
-
+  const savedSummary = await prisma.sessionSummary.create({
     data: {
-
       sessionId,
 
-      technicalAvg: summaryResult.technicalAvg,
-      depthAvg: summaryResult.depthAvg,
-      communicationAvg: summaryResult.communicationAvg,
-      codingAvg: summaryResult.codingAvg,
-      relevanceAvg: summaryResult.relevanceAvg,
+      technicalAvg: summary.technicalAvg,
+      depthAvg: summary.depthAvg,
+      communicationAvg: summary.communicationAvg,
+      relevanceAvg: summary.relevanceAvg,
+      codingAvg: summary.codingAvg,
 
-      topicCoverageScore: summaryResult.topicCoverageScore,
-      consistencyScore: summaryResult.consistencyScore,
-      confidenceScore: summaryResult.confidenceScore,
+      topicCoverageScore: summary.topicCoverageScore,
+      consistencyScore: summary.consistencyScore,
+      confidenceScore: summary.confidenceScore,
 
-      overallScore: summaryResult.overallScore,
+      overallScore: summary.overallScore,
 
-      strongSkillTags: summaryResult.strongSkillTags as Prisma.JsonArray,
-      weakSkillTags: summaryResult.weakSkillTags as Prisma.JsonArray,
+      strongSkillTags: summary.strongSkillTags,
+      weakSkillTags: summary.weakSkillTags,
 
-      theoryQuestionCount: summaryResult.theoryQuestionCount,
-      codingQuestionCount: summaryResult.codingQuestionCount
-
+      theoryQuestionCount: summary.theoryQuestionCount,
+      codingQuestionCount: summary.codingQuestionCount
     }
-
   })
 
-
-  // 9️⃣ Mark interview completed
+  const durationSeconds =
+Math.floor((Date.now() - session.createdAt.getTime()) / 1000)
 
   await prisma.interviewSession.update({
     where: { id: sessionId },
     data: {
-      completed: true
+      completed: true,
+      endedAt: new Date(),
+      durationSeconds
     }
   })
 
-
-  return summary
+  return savedSummary
 }
+
+export default {generateSessionSummary}
