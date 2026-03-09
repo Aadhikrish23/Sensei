@@ -106,4 +106,31 @@ Math.floor((Date.now() - session.createdAt.getTime()) / 1000)
   return savedSummary
 }
 
-export default {generateSessionSummary}
+
+async function getAllSession(userid:string) {
+  const session = await prisma.interviewSession.findMany({
+    where:{
+      userId:userid
+    },
+    select: {
+      id: true,
+      userId: true,
+      resumeId: true,
+      jdId: true,
+      roleCategory: true,
+      decision: true,
+      completed: true,
+      createdAt: true,
+      updatedAt: true,
+      endedAt: true
+    }
+  })
+
+  if (!session) {
+    throw new Error("Interview session not found")
+  }
+  return session;
+
+}
+
+export default {generateSessionSummary,getAllSession}

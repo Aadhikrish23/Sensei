@@ -101,3 +101,143 @@
  *       200:
  *         description: Answer evaluated successfully
  */
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: Session Summary
+ *   description: Interview session analytics APIs
+ */
+
+/**
+ * @swagger
+ * /api/session-summary/interview/{sessionId}/complete:
+ *   post:
+ *     summary: Complete interview and generate session summary
+ *     tags: [Session Summary]
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Interview session ID
+ *     responses:
+ *       200:
+ *         description: Session summary generated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: SUCCESS
+ *               data:
+ *                 sessionId: c6ca3f19-6692-4395-ae9c-f47ee7f25630
+ *                 technicalAvg: 7.4
+ *                 depthAvg: 6.8
+ *                 communicationAvg: 8.1
+ *                 codingAvg: 7.0
+ *                 relevanceAvg: 7.9
+ *                 topicCoverageScore: 0.82
+ *                 consistencyScore: 7.1
+ *                 confidenceScore: 0.77
+ *                 overallScore: 74.5
+ *                 strongSkillTags:
+ *                   - Node.js
+ *                   - MongoDB
+ *                 weakSkillTags:
+ *                   - System Design
+ *                   - Security
+ *       404:
+ *         description: Interview session not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /api/session-summary:
+ *   get:
+ *     summary: Get all sessions
+ *     tags: [Session Summary]
+ *     responses:
+ *       200:
+ *         description: List of Sessions
+ */
+
+
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: Final Report
+ *   description: AI generated interview report APIs
+ */
+
+/**
+ * @swagger
+ * /api/report/{sessionId}/final-report:
+ *   post:
+ *     summary: Generate final AI interview report
+ *     tags: [Final Report]
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Interview session ID
+ *     responses:
+ *       200:
+ *         description: Final interview report generated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: SUCCESS
+ *               data:
+ *                 hiring_recommendation: Lean Hire
+ *                 candidate_summary: The candidate demonstrated strong backend knowledge but needs improvement in system design and cloud architecture.
+ *                 strengths:
+ *                   - Node.js
+ *                   - REST API design
+ *                 weaknesses:
+ *                   - System design
+ *                   - Security
+ *                 technical_depth_feedback: Candidate has good backend fundamentals but lacks deep architectural knowledge.
+ *                 communication_feedback: Communication was clear but explanations lacked deeper reasoning.
+ *                 improvement_plan:
+ *                   - Study AWS services
+ *                   - Practice system design questions
+ *                   - Improve security knowledge
+ *       404:
+ *         description: Session summary not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /api/report/{sessionId}/final-report/pdf:
+ *   get:
+ *     summary: Download interview report as PDF
+ *     tags: [Final Report]
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Interview session ID
+ *     responses:
+ *       200:
+ *         description: Interview report PDF downloaded successfully
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Report not found
+ *       500:
+ *         description: Internal server error
+ */
