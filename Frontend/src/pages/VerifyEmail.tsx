@@ -10,7 +10,7 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { verify } = useAuth();
+  const { verify,accessToken } = useAuth();
   const navigate = useNavigate();
   const hasVerified = useRef(false);
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function VerifyEmail() {
     };
     verifyEmail();
   }, [token]);
-  const { accessToken } = useAuth();
+ 
 
   useEffect(() => {
     if (accessToken) {

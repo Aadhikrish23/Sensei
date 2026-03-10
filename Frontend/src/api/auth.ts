@@ -53,4 +53,9 @@ const userVerify = async (token: string) : Promise<LoginSuccess> => {
   const userdata = await apiClient.get<LoginSuccess>(`auth/verify-email?token=${token}`);
   return userdata.data;
 };
-export default { userlogin, userRefresh, userSignup,userVerify };
+
+const userLogout = async():Promise<string>=>{
+  const usedata = await apiClient.post<string>("/auth/logout");
+  return usedata.data;
+}
+export default { userlogin, userRefresh, userSignup,userVerify,userLogout };

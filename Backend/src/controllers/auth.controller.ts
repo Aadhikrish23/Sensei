@@ -41,7 +41,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       });
       return res.status(200).json({
         status: "SUCCESS",
-        Data: { id: userdata.id, accessToken },
+        Data: { id: userdata.id, accessToken ,isEmailVerified:userdata.isEmailVerified},
       });
     }
   } catch (error) {

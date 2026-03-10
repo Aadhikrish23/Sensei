@@ -18,6 +18,7 @@ type AuthContextType = {
   refresh: () => Promise<void>;
     hasAttemptedRefresh: boolean;
   verify: (token: string) => Promise<void>;
+  logout:()=>void;
 };
 interface User {
   userid: string;
@@ -48,7 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("After setting:", accessToken);
     return userdata.Status;
   };
-  const logout = () => {
+  const logout = async() => {
+    const userdata = await auth.userLogout();
     setAccessToken(null);
     setUser(null);
     tokenServices.clearToken();
@@ -111,7 +113,7 @@ useEffect(() => {
   console.log("Setter exists:", typeof setAccessToken);
   return (
     <AuthContext.Provider
-      value={{ accessToken, user, login, refresh,   hasAttemptedRefresh, verify }}
+      value={{ accessToken, user, login, refresh,   hasAttemptedRefresh, verify ,logout}}
     >
       {children}
     </AuthContext.Provider>
