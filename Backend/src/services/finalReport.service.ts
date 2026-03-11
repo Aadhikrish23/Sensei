@@ -9,13 +9,16 @@ const generateFinalReport = async (sessionId: string) => {
       resume: true,
       jobDescription: true,
       sessionSummary: true,
+      
     },
   });
 
   if (!session) {
     throw new Error("Interview session not found");
   }
-
+  if(session.finalReport){
+    return  session.finalReport;
+  }
   // 2️⃣ Extract required data
   const payload = {
     sessionSummary: session.sessionSummary,

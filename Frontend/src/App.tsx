@@ -13,6 +13,7 @@ import Jobs from "./pages/Jobs";
 import Reports from "./pages/Reports";
 import Resumes from "./pages/Resumes";
 import NotFound from "./pages/NotFound";
+import InterviewSetup from "./pages/InterviewSetup";
 
 function App() {
   return (
@@ -35,9 +36,10 @@ function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="resumes" element={<Resumes />} />
         <Route path="jobs" element={<Jobs />} />
-        <Route path="interview" element={<Interview />} />
-        <Route path="reports" element={<Reports />} />
-         <Route path="*" element={<NotFound />} />
+        <Route path="/interviews" element={<InterviewSetup />} />
+        <Route path="/interview/:sessionId" element={<Interview />} />
+       <Route path="/reports" element={<Reports />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

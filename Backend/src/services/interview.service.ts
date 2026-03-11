@@ -12,11 +12,10 @@ async function createInterviewSession(
   userId: string,
   resumeId: string,
   jdId: string,
-  difficulty: "easy"| "medium"|"hard"
+  difficulty: "easy" | "medium" | "hard",
 ) {
-
   const resumeData = await prisma.resume.findFirst({
-    where: { id: resumeId, userId }
+    where: { id: resumeId, userId },
   });
 
   if (!resumeData) {
@@ -24,7 +23,7 @@ async function createInterviewSession(
   }
 
   const jdData = await prisma.jobDescription.findFirst({
-    where: { id: jdId, userId }
+    where: { id: jdId, userId },
   });
 
   if (!jdData) {
@@ -36,20 +35,22 @@ async function createInterviewSession(
       userId,
       resumeId,
       jdId,
-      completed: false
-    }
+      completed: false,
+    },
   });
 
   if (existingSession) {
-    throw new Error("An active interview already exists for this Resume and JD");
+    throw new Error(
+      "An active interview already exists for this Resume and JD",
+    );
   }
 
   const roleCategory = jdData.roleCategory || "general";
 
   const match = await prisma.resumeJDMatch.findUnique({
     where: {
-      resumeId_jdId: { resumeId, jdId }
-    }
+      resumeId_jdId: { resumeId, jdId },
+    },
   });
 
   const strongSkills = (match?.strongSkills as string[]) || [];
@@ -64,7 +65,7 @@ async function createInterviewSession(
     skillGraph[skill] = {
       scores: [],
       confidence: 0,
-      questions_asked: 0
+      questions_asked: 0,
     };
   });
 
@@ -78,9 +79,9 @@ async function createInterviewSession(
     matchAnalysis: {
       strongSkills,
       missingSkills,
-      partiallyMatchedSkills: partialSkills
+      partiallyMatchedSkills: partialSkills,
     },
-    questionNumber: 1
+    questionNumber: 1,
   };
 
   const response = await aiClient.post("/generate-question", aiPayload);
@@ -101,8 +102,8 @@ async function createInterviewSession(
       roleCategory,
       difficulty,
       skillGraph,
-      totalQuestions: 1
-    }
+      totalQuestions: 1,
+    },
   });
 
   /* Store question */
@@ -114,7 +115,7 @@ async function createInterviewSession(
     questionType: question.questionType,
     difficulty: question.difficulty,
     skillTags: question.skillTags,
-    roleCategory
+    roleCategory,
   });
 
   return {
@@ -123,23 +124,21 @@ async function createInterviewSession(
     questionText: question.questionText,
     questionType: question.questionType,
     difficulty: question.difficulty,
-    skillTags: question.skillTags
+    skillTags: question.skillTags,
   };
 }
-
 
 async function submitAnswer(
   userId: string,
   sessionId: string,
   questionNumber: number,
-  answerText: string
+  answerText: string,
 ) {
-
   const session = await prisma.interviewSession.findFirst({
     where: {
       userId: userId,
-      id: sessionId
-    }
+      id: sessionId,
+    },
   });
 
   if (!session) {
@@ -150,25 +149,22 @@ async function submitAnswer(
     throw new Error("Interview session already completed");
   }
 
-
   const question = await questionMongoRepo.getQuestion({
     sessionId,
-    questionNumber
+    questionNumber,
   });
 
   if (!question) {
     throw new Error("Question not found");
   }
 
-
   const resume = await prisma.resume.findUnique({
-    where: { id: session.resumeId }
+    where: { id: session.resumeId },
   });
 
   const jd = await prisma.jobDescription.findUnique({
-    where: { id: session.jdId }
+    where: { id: session.jdId },
   });
-
 
   const aiPayload = {
     questionText: question.questionText,
@@ -177,9 +173,8 @@ async function submitAnswer(
     difficulty: question.difficulty,
     skillTags: question.skillTags,
     resumeContext: resume?.parsedData || {},
-    jdContext: jd?.parsedData || {}
+    jdContext: jd?.parsedData || {},
   };
-
 
   /* ---------- AI Evaluation ---------- */
 
@@ -188,124 +183,112 @@ async function submitAnswer(
   const evaluation = response.data.evaluation;
   const feedback = response.data.feedback;
 
-
   const evaluationScore =
     (evaluation.technical +
       evaluation.depth +
       evaluation.communication +
-      evaluation.relevance) / 4;
-
+      evaluation.relevance) /
+    4;
 
   const history = await questionMongoRepo.getSessionQuestions(sessionId);
 
   if (session.totalQuestions >= INTERVIEW_CONFIG.MAX_QUESTIONS) {
-
-  await prisma.interviewSession.update({
-    where: { id: sessionId },
-    data: {
-      completed: true
-    }
-  });
-
-  return {
-    evaluation,
-    feedback,
-    interviewComplete: true,
-    reason: "MAX_QUESTIONS_REACHED"
-  };
-}
-
-/* ---------- LOW SCORE STREAK CHECK ---------- */
-
-const recentEvaluations = await EvaluationLogModel
-  .find({ sessionId })
-  .sort({ questionNumber: -1 })
-  .limit(INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT);
-
-if (recentEvaluations.length === INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT) {
-
-  const lowScores = recentEvaluations.filter((e) => {
-
-    const avg =
-      (e.technical + e.depth + e.relevance) / 3;
-
-    return avg < INTERVIEW_CONFIG.LOW_SCORE_THRESHOLD;
-
-  });
-
-  if (lowScores.length === INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT) {
-
     await prisma.interviewSession.update({
       where: { id: sessionId },
       data: {
-        completed: true
-      }
+        completed: true,
+      },
     });
 
     return {
       evaluation,
       feedback,
       interviewComplete: true,
-      reason: "LOW_SCORE_STREAK"
+      reason: "MAX_QUESTIONS_REACHED",
     };
   }
-}
 
-/* ---------- SKILL COVERAGE CHECK ---------- */
+  /* ---------- LOW SCORE STREAK CHECK ---------- */
 
-const testedSkills = await questionMongoRepo.getSessionQuestions(sessionId);
+  const recentEvaluations = await EvaluationLogModel.find({ sessionId })
+    .sort({ questionNumber: -1 })
+    .limit(INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT);
 
-const skillSet = new Set<string>();
+  if (recentEvaluations.length === INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT) {
+    const lowScores = recentEvaluations.filter((e) => {
+      const avg = (e.technical + e.depth + e.relevance) / 3;
 
-testedSkills.forEach((q: any) => {
-  q.skillTags.forEach((s: string) => skillSet.add(s));
-});
+      return avg < INTERVIEW_CONFIG.LOW_SCORE_THRESHOLD;
+    });
 
-const jdParsed = jd?.parsedData as any;
-const jdSkills: string[] = jdParsed?.skills || [];
+    if (lowScores.length === INTERVIEW_CONFIG.LOW_SCORE_STREAK_LIMIT) {
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          completed: true,
+        },
+      });
 
-let coverage = 0;
-
-if (jdSkills.length > 0) {
-  coverage = skillSet.size / jdSkills.length;
-}
-
-if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
-
-  await prisma.interviewSession.update({
-    where: { id: sessionId },
-    data: {
-      completed: true
+      return {
+        evaluation,
+        feedback,
+        interviewComplete: true,
+        reason: "LOW_SCORE_STREAK",
+      };
     }
+  }
+
+  /* ---------- SKILL COVERAGE CHECK ---------- */
+
+  const testedSkills = await questionMongoRepo.getSessionQuestions(sessionId);
+
+  const skillSet = new Set<string>();
+
+  testedSkills.forEach((q: any) => {
+    q.skillTags.forEach((s: string) => skillSet.add(s));
   });
 
-  return {
-    evaluation,
-    feedback,
-    interviewComplete: true,
-    reason: "SKILL_COVERAGE_COMPLETE"
-  };
-}
+  const jdParsed = jd?.parsedData as any;
+  const jdSkills: string[] = jdParsed?.skills || [];
 
+  let coverage = 0;
+
+  if (jdSkills.length > 0) {
+    coverage = skillSet.size / jdSkills.length;
+  }
+
+  if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
+    await prisma.interviewSession.update({
+      where: { id: sessionId },
+      data: {
+        completed: true,
+      },
+    });
+
+    return {
+      evaluation,
+      feedback,
+      interviewComplete: true,
+      reason: "SKILL_COVERAGE_COMPLETE",
+    };
+  }
 
   const match = await prisma.resumeJDMatch.findUnique({
     where: {
       resumeId_jdId: {
         resumeId: session.resumeId,
-        jdId: session.jdId
-      }
-    }
+        jdId: session.jdId,
+      },
+    },
   });
 
-
   const nextPayload = {
-
     resume_data: resume?.parsedData || {},
     jd_data: jd?.parsedData || {},
 
     match_result: {
       strongSkills: match?.strongSkills || [],
-      missingSkills: match?.missingSkills || []
+      missingSkills: match?.missingSkills || [],
     },
 
     previous_question: question.questionText,
@@ -318,14 +301,12 @@ if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
 
     skill_graph: session.skillGraph || {},
 
-    interview_history: history
+    interview_history: history,
   };
-
 
   /* ---------- Generate Next Question ---------- */
 
   const next = await generateNextQuestion(nextPayload);
-
 
   /* ---------- NOW write to DB ---------- */
 
@@ -333,9 +314,8 @@ if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
     sessionId,
     questionNumber,
     answerText,
-    questionType: question.questionType
+    questionType: question.questionType,
   });
-
 
   await createEvaluation({
     sessionId,
@@ -350,33 +330,29 @@ if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
     weaknesses: feedback.weaknesses,
     improvements: feedback.improvements,
 
-    skillTags: question.skillTags
+    skillTags: question.skillTags,
   });
 
-
   if (next.interview_complete) {
-
     await prisma.interviewSession.update({
       where: { id: sessionId },
       data: {
         completed: true,
         decision: next.decision,
-        skillGraph: next.skill_graph
-      }
+        skillGraph: next.skill_graph,
+      },
     });
 
     return {
       evaluation,
       feedback,
       interviewComplete: true,
-      decision: next.decision
+      decision: next.decision,
     };
   }
 
-
   const nextQuestion = next.question;
   const nextQuestionNumber = questionNumber + 1;
-
 
   await questionMongoRepo.createQuestion({
     sessionId,
@@ -385,18 +361,16 @@ if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
     questionType: nextQuestion.questionType,
     difficulty: nextQuestion.difficulty,
     skillTags: nextQuestion.skillTags,
-    roleCategory: session.roleCategory
+    roleCategory: session.roleCategory,
   });
-
 
   await prisma.interviewSession.update({
     where: { id: sessionId },
     data: {
       skillGraph: next.skill_graph,
-      totalQuestions: nextQuestionNumber
-    }
+      totalQuestions: nextQuestionNumber,
+    },
   });
-
 
   return {
     evaluation,
@@ -407,33 +381,23 @@ if (coverage >= INTERVIEW_CONFIG.TARGET_SKILL_COVERAGE) {
       questionText: nextQuestion.questionText,
       questionType: nextQuestion.questionType,
       difficulty: nextQuestion.difficulty,
-      skillTags: nextQuestion.skillTags
-    }
+      skillTags: nextQuestion.skillTags,
+    },
   };
-
 }
 
-
-
 async function generateNextQuestion(payload: any) {
-
-
-  
-  const response = await aiClient.post(
-    "/generate-next-question",
-    payload
-  );
+  const response = await aiClient.post("/generate-next-question", payload);
 
   return response.data;
 }
 
 async function endInterviewSession(userId: string, sessionId: string) {
-
   const session = await prisma.interviewSession.findFirst({
     where: {
       id: sessionId,
-      userId
-    }
+      userId,
+    },
   });
 
   if (!session) {
@@ -447,18 +411,69 @@ async function endInterviewSession(userId: string, sessionId: string) {
   await prisma.interviewSession.update({
     where: { id: sessionId },
     data: {
-      completed: true
-    }
+      completed: true,
+    },
   });
 
   return {
-    message: "Interview ended successfully"
+    message: "Interview ended successfully",
   };
 }
 
+async function getAllSession(userid: string) {
+  const session = await prisma.interviewSession.findMany({
+    where: {
+      userId: userid,
+    },
+    select: {
+      id: true,
+      userId: true,
+      resumeId: true,
+      jdId: true,
+      roleCategory: true,
+      decision: true,
+      completed: true,
+      createdAt: true,
+      updatedAt: true,
+      endedAt: true,
+    },
+  });
+
+  if (!session) {
+    throw new Error("Interview session not found");
+  }
+  return session;
+}
+async function getSessionById(userid: string, sessionId: string) {
+  const session = await prisma.interviewSession.findFirst({
+    where: {
+      userId: userid,
+      id: sessionId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      resumeId: true,
+      jdId: true,
+      roleCategory: true,
+      decision: true,
+      completed: true,
+      createdAt: true,
+      updatedAt: true,
+      endedAt: true,
+    },
+  });
+  const latestQuestion = await questionMongoRepo.getLatestQuestion(sessionId);
+  if (!session) {
+    throw new Error("Interview session not found");
+  }
+  return { session, question: latestQuestion };
+}
 export default {
   createInterviewSession,
   submitAnswer,
   generateNextQuestion,
-  endInterviewSession
+  endInterviewSession,
+  getAllSession,
+  getSessionById,
 };

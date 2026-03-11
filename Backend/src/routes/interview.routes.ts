@@ -19,4 +19,15 @@ interviewRouter.post(
   authenticate,
   interviewController.endInterview,
 );
+interviewRouter.get(
+  "/",
+  authenticate,
+  interviewController.getAllSessions,
+);
+interviewRouter.get(
+  "/:sessionId",
+  authenticate,
+  interviewController.getSessionByID,
+);
+
 export default interviewRouter;

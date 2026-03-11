@@ -25,17 +25,17 @@ const startInterview = async (
       Status: "Success",
       Data: sessionData,
     });
-
   } catch (error) {
     next(error);
   }
 };
 
-const submitInterviewAnswer = async (req: Request,
+const submitInterviewAnswer = async (
+  req: Request,
   res: Response,
-  next: NextFunction)=> {
+  next: NextFunction,
+) => {
   try {
-
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -46,7 +46,7 @@ const submitInterviewAnswer = async (req: Request,
     if (!sessionId || !questionNumber || !answerText) {
       return res.status(400).json({
         status: "ERROR",
-        message: "sessionId, questionNumber and answerText are required"
+        message: "sessionId, questionNumber and answerText are required",
       });
     }
 
@@ -54,24 +54,25 @@ const submitInterviewAnswer = async (req: Request,
       userId,
       sessionId,
       questionNumber,
-      answerText
+      answerText,
     );
 
     return res.status(200).json({
       status: "SUCCESS",
-      data: result
+      data: result,
     });
-
   } catch (error: any) {
-
-    next(error)
-
+    next(error);
   }
-}
+};
 
-const endInterview = async (req:Request,res:Response,next:NextFunction) => {
+const endInterview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-     if (!req.user) {
+    if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -86,13 +87,56 @@ const endInterview = async (req:Request,res:Response,next:NextFunction) => {
     return res.json({
       status: "SUCCESS",
       message: "Interview ended",
-      summary
+      summary,
     });
-
   } catch (error: any) {
-
-    next(error)
-
+    next(error);
   }
-}
-export default {startInterview,submitInterviewAnswer,endInterview}
+};
+const getAllSessions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const session = await interviewService.getAllSession(req.user.id);
+
+    return res.status(200).json({
+      data: session,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const getSessionByID = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+     const sessionId = req.params.sessionId as string;
+
+
+    const session = await interviewService.getSessionById(req.user.id,sessionId);
+
+    return res.status(200).json({
+      data: session,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export default {
+  startInterview,
+  submitInterviewAnswer,
+  endInterview,
+  getAllSessions,
+  getSessionByID
+};

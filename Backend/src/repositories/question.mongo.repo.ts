@@ -46,5 +46,14 @@ async function getSessionQuestions(sessionId: string) {
   }));
 
 }
+async function getLatestQuestion(sessionId: string) {
 
-export default {createQuestion,getQuestion,getSessionQuestions}
+  const question = await QuestionLogModel
+    .findOne({ sessionId })
+    .sort({ questionNumber: -1 });
+
+  return question;
+
+}
+
+export default {createQuestion,getQuestion,getSessionQuestions,getLatestQuestion}

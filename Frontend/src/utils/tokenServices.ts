@@ -1,21 +1,36 @@
-let token = "";
+let token: string | null = null;
 
- function setToken(newtoken:string){
-    token = newtoken;
-}
- function getToken(){
-    return token;
-}
- function clearToken(){
-    token = "";
+function setToken(newToken: string) {
+  token = newToken;
+  localStorage.setItem("accessToken", newToken);
 }
 
-let logoutcallback : (()=>void)|null = null;
+function getToken() {
+  if (!token) {
+    token = localStorage.getItem("accessToken");
+  }
+  return token;
+}
 
-function registerLogout(cb:any){
-    logoutcallback = cb;
+function clearToken() {
+  token = null;
+  localStorage.removeItem("accessToken");
 }
-function triggerLogout(){
-    if(logoutcallback) logoutcallback();
+
+let logoutcallback: (() => void) | null = null;
+
+function registerLogout(cb: any) {
+  logoutcallback = cb;
 }
-export default {setToken,getToken,clearToken,triggerLogout,registerLogout}
+
+function triggerLogout() {
+  if (logoutcallback) logoutcallback();
+}
+
+export default {
+  setToken,
+  getToken,
+  clearToken,
+  triggerLogout,
+  registerLogout
+};

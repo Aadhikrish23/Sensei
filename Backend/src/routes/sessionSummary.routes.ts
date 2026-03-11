@@ -10,10 +10,6 @@ sessionSummaryRouter.post(
   sessionSummaryController.completeInterviewSession
 );
 
-sessionSummaryRouter.get(
-  "/",
-  authenticate,
-  sessionSummaryController.getAllSessions
-);
+
 
 export default sessionSummaryRouter;

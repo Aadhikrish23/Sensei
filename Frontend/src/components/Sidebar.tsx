@@ -59,7 +59,7 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink
-          to="/interview"
+          to="/interviews"
           className={({ isActive }) =>
             `px-3 py-2 rounded-md transition
     ${
@@ -69,7 +69,7 @@ export default function Sidebar() {
     }`
           }
         >
-          Start Interview
+          Interview Section
         </NavLink>
 
         <NavLink
