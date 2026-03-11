@@ -26,3 +26,17 @@ export interface RenameResumeResponse {
     updatedAt: string;
   };
 }
+
+export type ResumeAnalysisValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | Record<string, any>[]
+  | Record<string, any>;
+
+export type ResumeAnalysis = Record<string, ResumeAnalysisValue>;
+
+export interface AnalyzeResumeResponse {
+  parsedData: ResumeAnalysis;
+}

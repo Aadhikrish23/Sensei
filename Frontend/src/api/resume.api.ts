@@ -4,6 +4,7 @@ import {
   GetResumesResponse,
   DeleteResumeResponse,
   RenameResumeResponse,
+  AnalyzeResumeResponse,
 } from "../types/resumes.types";
 
 const uploadResume = async (formData: FormData): Promise<UploadResumeResponse> => {
@@ -38,9 +39,18 @@ const renameResume = async (
   return response.data;
 };
 
+const analyzeResume = async (resumeId: string): Promise<AnalyzeResumeResponse> => {
+  const response = await apiClient.post("/ai/parse-resume", {
+    resumeId,
+  });
+
+  return response.data;
+};
+
 export default {
   uploadResume,
   getAllResumes,
   deleteResume,
   renameResume,
+  analyzeResume,
 };

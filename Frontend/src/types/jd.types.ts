@@ -18,3 +18,17 @@ export interface GetJDsResponse {
 export interface CreateJDResponse {
   data: JobDescription;
 }
+
+export type JDAnalysisValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | Record<string, any>[]
+  | Record<string, any>;
+
+export type JDAnalysis = Record<string, JDAnalysisValue>;
+
+export interface AnalyzeJDResponse {
+  parsedData: JDAnalysis;
+}

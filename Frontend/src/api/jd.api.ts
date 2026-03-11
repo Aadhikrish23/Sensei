@@ -1,5 +1,6 @@
 import apiClient from "./axios";
 import {
+    AnalyzeJDResponse,
   CreateJDRequest,
   CreateJDResponse,
   GetJDsResponse
@@ -25,9 +26,18 @@ const updateJD = async (id: string, payload: CreateJDRequest) => {
   return response.data;
 };
 
+const analyzeJD = async (jdId: string): Promise<AnalyzeJDResponse> => {
+  const response = await apiClient.post("/ai/parse-jd", {
+    jdId
+  });
+
+  return response.data;
+};
+
 export default {
   createJD,
   getAllJDs,
   deleteJD,
-  updateJD
+  updateJD,
+  analyzeJD
 };

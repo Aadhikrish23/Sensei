@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import jdApi from "../api/jd.api";
-
-interface JobDescription {
-  id: string;
-  title: string;
-  createdAt: string;
-}
+import AIAnalysisViewer from "../components/AIAnalysisViewer";
+import { JobDescription, JDAnalysis } from "../types/jd.types";
 
 export default function Jobs() {
+
   const [jobs, setJobs] = useState<JobDescription[]>([]);
+  const [analysis, setAnalysis] = useState<Record<string, JDAnalysis>>({});
+  const [openAnalysis, setOpenAnalysis] = useState<Record<string, boolean>>({});
+
   const [title, setTitle] = useState("");
   const [roleCategory, setRoleCategory] = useState("");
   const [rawText, setRawText] = useState("");
+
+  /* ---------- FETCH ---------- */
 
   const fetchJobs = async () => {
     try {
@@ -21,6 +23,8 @@ export default function Jobs() {
       console.error(error);
     }
   };
+
+  /* ---------- CREATE ---------- */
 
   const handleCreateJD = async () => {
     if (!title || !rawText) {
@@ -35,7 +39,6 @@ export default function Jobs() {
         roleCategory,
       });
 
-      // reset form
       setTitle("");
       setRoleCategory("");
       setRawText("");
@@ -46,6 +49,8 @@ export default function Jobs() {
     }
   };
 
+  /* ---------- DELETE ---------- */
+
   const handleDelete = async (id: string) => {
     try {
       await jdApi.deleteJD(id);
@@ -55,9 +60,40 @@ export default function Jobs() {
     }
   };
 
+  /* ---------- ANALYZE ---------- */
+
+  const handleAnalyze = async (jdId: string) => {
+    try {
+
+      const result = await jdApi.analyzeJD(jdId);
+
+      setAnalysis((prev) => ({
+        ...prev,
+        [jdId]: result.parsedData,
+      }));
+
+      setOpenAnalysis((prev) => ({
+        ...prev,
+        [jdId]: true,
+      }));
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const toggleAnalysis = (jdId: string) => {
+    setOpenAnalysis((prev) => ({
+      ...prev,
+      [jdId]: !prev[jdId],
+    }));
+  };
+
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  /* ---------- UI ---------- */
 
   return (
     <div className="space-y-8">
@@ -66,7 +102,8 @@ export default function Jobs() {
         Job Descriptions
       </h1>
 
-      {/* Create JD */}
+      {/* CREATE JD */}
+
       <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card space-y-4">
 
         <h2 className="text-lg font-semibold">Create Job Description</h2>
@@ -104,8 +141,10 @@ export default function Jobs() {
 
       </div>
 
-      {/* JD List */}
+      {/* JD LIST */}
+
       <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card">
+
         <h2 className="text-lg font-semibold mb-4">
           Job Descriptions
         </h2>
@@ -115,24 +154,64 @@ export default function Jobs() {
             No job descriptions created yet
           </p>
         ) : (
-          <ul className="space-y-2">
-            {jobs.map((job) => (
-              <li
-                key={job.id}
-                className="flex justify-between items-center"
-              >
-                <span>{job.title}</span>
+          <ul className="space-y-4">
 
-                <button
-                  onClick={() => handleDelete(job.id)}
-                  className="text-red-500"
-                >
-                  Delete
-                </button>
+            {jobs.map((job) => (
+
+              <li key={job.id} className="border-b pb-4 space-y-3">
+
+                <div className="flex justify-between items-center">
+
+                  <span>{job.title}</span>
+
+                  <div className="flex gap-3">
+
+                    <button
+                      onClick={() => handleAnalyze(job.id)}
+                      className="text-blue-500"
+                    >
+                      Analyze
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(job.id)}
+                      className="text-red-500"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                </div>
+
+                {/* COLLAPSIBLE ANALYSIS */}
+
+                {analysis[job.id] && (
+                  <div>
+
+                    <button
+                      onClick={() => toggleAnalysis(job.id)}
+                      className="text-sm text-blue-500"
+                    >
+                      {openAnalysis[job.id]
+                        ? "Hide Analysis ▲"
+                        : "View Analysis ▼"}
+                    </button>
+
+                    {openAnalysis[job.id] && (
+                      <AIAnalysisViewer data={analysis[job.id]} />
+                    )}
+
+                  </div>
+                )}
+
               </li>
+
             ))}
+
           </ul>
         )}
+
       </div>
 
     </div>

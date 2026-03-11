@@ -16,11 +16,11 @@ async function parseJobDescription(jdId: string, userId: string) {
     throw new Error("JD not found");
   }
 
-  // if (jd.parsedData) {
-  //   return {
-  //     parsedData: jd.parsedData,
-  //   };
-  // }
+  if (jd.parsedData) {
+    return {
+      parsedData: jd.parsedData,
+    };
+  }
 
   // 2️⃣ Call FastAPI AI service
   const response = await aiClient.post("/parse-jd", {
@@ -57,11 +57,11 @@ async function parseResume(resumeId: string, userId: string) {
     throw new Error("JD not found");
   }
 
-  // if (Resume.parsedData) {
-  //   return {
-  //     parsedData: Resume.parsedData,
-  //   };
-  // }
+  if (Resume.parsedData) {
+    return {
+      parsedData: Resume.parsedData,
+    };
+  }
   const response = await aiClient.post("/parse-resume", {
     rawText: Resume.extractedText,
   });
@@ -118,9 +118,9 @@ async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
       jdVersionHash,
     },
   });
-  // if (existingMatch) {
-  //   return existingMatch;
-  // }
+  if (existingMatch) {
+    return existingMatch;
+  }
 
   const aiResponse = await aiClient.post("/match-resume-jd", {
     resume_data: resume.parsedData,
