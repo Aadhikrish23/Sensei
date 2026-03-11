@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import auth from "../api/auth";
+import auth from "../api/auth.api";
 import tokenServices from "../utils/tokenServices";
 
 type AuthContextType = {

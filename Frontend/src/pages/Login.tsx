@@ -65,7 +65,7 @@ export default function Login() {
       >
         <span className="text-lg">{theme === "light" ? "🌙" : "☀️"}</span>
       </button>
-      <div className="w-full w-[90%] sm:w-[400px] md:w-[450px] bg-samurai-card dark:bg-ninja-card p-8 rounded-2xl shadow-xl border border-samurai-border dark:border-ninja-border">
+      <div className=" w-[90%] sm:w-[400px] md:w-[450px] bg-samurai-card dark:bg-ninja-card p-8 rounded-2xl shadow-xl border border-samurai-border dark:border-ninja-border">
         <h1 className="text-3xl font-bold text-center mb-6 text-samurai-text dark:text-ninja-text">
           Login
         </h1>

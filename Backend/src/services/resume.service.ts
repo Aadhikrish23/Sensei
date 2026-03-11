@@ -9,6 +9,9 @@ interface UploadResumeParams {
   title: string;
 }
 
+
+
+
 async function extractTextFromPDF(filePath: string): Promise<string> {
 const buffer = await fs.readFile(filePath);   // async read
 
