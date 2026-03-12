@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import authServices from "../services/auth.services.js";
 import authValidation from "../validations/auth.validation.js";
 import { userInfo } from "os";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-const signup = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const signup = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  
     const validatedData = authValidation.signupSchema.parse(req.body);
 
     const userdata = await authServices.createUser(
@@ -13,13 +14,11 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     );
 
     return res.status(201).json({ Status: "SUCCESS", Data: userdata });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const login = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+ 
     const validatedData = authValidation.loginSchema.parse(req.body);
     const userdata = await authServices.loginuser(
       validatedData.email,
@@ -44,13 +43,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         Data: { id: userdata.id, accessToken ,isEmailVerified:userdata.isEmailVerified},
       });
     }
-  } catch (error) {
-    next(error);
-  }
-};
+ 
+});
 
-const refresh = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const refresh =asyncHandler (async (req: Request, res: Response, next: NextFunction) => {
+ 
     const token = req.cookies.refreshToken;
     if (!token) {
       throw new Error("Session expired login again...");
@@ -73,11 +70,9 @@ const refresh = async (req: Request, res: Response, next: NextFunction) => {
         id:userid,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-};
-const loggout = async (req: Request, res: Response, next: NextFunction) => {
+ 
+});
+const loggout = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.refreshToken;
   await authServices.logout(token);
   res.clearCookie("refreshToken", {
@@ -87,9 +82,9 @@ const loggout = async (req: Request, res: Response, next: NextFunction) => {
   });
 
   return res.status(200).json({ Status: "SUCCESS", Data: "User Logged out " });
-};
-const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+});
+const verifyEmail = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+ 
     const token = req.query.token as string;
 
     if (!token) {
@@ -112,11 +107,6 @@ const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
       status: "SUCCESS",
       Data: { id: userid, accessToken },
     });
-  } catch (error:any) {
-    if (error.message === "Resume not found") {
-    return res.status(404).json({ message: "Resume not found" });
-  }
-    next(error);
-  }
-};
+  
+});
 export default { signup, login, verifyEmail, refresh, loggout };

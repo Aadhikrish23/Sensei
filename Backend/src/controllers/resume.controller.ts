@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import resumeService from "../services/resume.service.js";
 import { renameResumeSchema, resumeIdParamSchema } from "../validations/resume.validation.js";
-
-const uploadResume = async (
+import { asyncHandler } from "../utils/asyncHandler.js";
+const uploadResume = asyncHandler( async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+ 
     if (!req.file) {
       throw Error("No resume file uploaded");
     }
@@ -29,16 +29,14 @@ const uploadResume = async (
         createdAt: resumedata.createdAt,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-};
-const deleteResume = async (
+  
+});
+const deleteResume = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+  
     resumeIdParamSchema.parse(req.params);
 
     if (!req.user) {
@@ -54,16 +52,14 @@ const deleteResume = async (
       message: "Resume deleted successfully",
     });
 
-  } catch (error) {
-    next(error);
-  }
-};
-const getResumeById = async (
+  
+});
+const getResumeById = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  try {
+ 
     resumeIdParamSchema.parse(req.params);
 
     if (!req.user) {
@@ -79,13 +75,11 @@ const getResumeById = async (
       data: resume,
     });
 
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
-const getResumes = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const getResumes = asyncHandler( async (req: Request, res: Response, next: NextFunction) => {
+  
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -95,17 +89,15 @@ const getResumes = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
       data: resumes,
     });
-  } catch (error) {
-    next(error);
-  }
-};
 
-const renameResume = async (
+});
+
+const renameResume =asyncHandler( async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+ 
     resumeIdParamSchema.parse(req.params);
     renameResumeSchema.parse(req.body);
 
@@ -124,8 +116,6 @@ const renameResume = async (
       data: updated,
     });
 
-  } catch (error) {
-    next(error);
-  }
-};
+ 
+});
 export default { uploadResume, deleteResume ,getResumes,renameResume,getResumeById};

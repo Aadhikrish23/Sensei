@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express"
 import sessionSummaryService from "../services/session-summary/sessionSummary.service.js"
- const completeInterviewSession = async (
+import { asyncHandler } from "../utils/asyncHandler.js"
+ const completeInterviewSession = asyncHandler(async (
   req: Request,
   res: Response
 ) => {
-  try {
+ 
     const sessionId = req.params.sessionId as string
 
     const summary = await sessionSummaryService.generateSessionSummary(sessionId)
@@ -13,13 +14,8 @@ import sessionSummaryService from "../services/session-summary/sessionSummary.se
       status: "SUCCESS",
       data: summary
     })
-  } catch (error: any) {
-    return res.status(500).json({
-      status: "ERROR",
-      message: error.message
-    })
-  }
+ 
 }
-
+)
 
 export default {completeInterviewSession}

@@ -5,8 +5,9 @@ import { generateInterviewReportPDF } from "../services/reportPdf.service.js";
 import { QuestionLogModel } from "../models/QuestionLog.js";
 import { AnswerLogModel } from "../models/AnswerLog.js";
 import { EvaluationLogModel } from "../models/EvaluationLog.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
- const downloadInterviewReportPDF = async (
+ const downloadInterviewReportPDF = asyncHandler(async (
   req: Request,
   res: Response,
 ) => {
@@ -46,7 +47,7 @@ import { EvaluationLogModel } from "../models/EvaluationLog.js";
   res.setHeader("Content-Type", "application/pdf");
 
   res.send(pdf);
-};
+});
 
 
 export default {downloadInterviewReportPDF}

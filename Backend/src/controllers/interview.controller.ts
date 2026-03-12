@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import interviewService from "../services/interview.service.js";
 import sessionSummaryService from "../services/session-summary/sessionSummary.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-const startInterview = async (
+const startInterview = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+  
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -25,17 +26,15 @@ const startInterview = async (
       Status: "Success",
       Data: sessionData,
     });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
-const submitInterviewAnswer = async (
+const submitInterviewAnswer =asyncHandler (async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -61,17 +60,15 @@ const submitInterviewAnswer = async (
       status: "SUCCESS",
       data: result,
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
+ 
+});
 
-const endInterview = async (
+const endInterview =asyncHandler( async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+ 
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -89,16 +86,14 @@ const endInterview = async (
       message: "Interview ended",
       summary,
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
-const getAllSessions = async (
+  
+});
+const getAllSessions =asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+  
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -108,16 +103,14 @@ const getAllSessions = async (
     return res.status(200).json({
       data: session,
     });
-  } catch (error) {
-    next(error);
-  }
-};
-const getSessionByID = async (
+  
+});
+const getSessionByID = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+  
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -129,10 +122,8 @@ const getSessionByID = async (
     return res.status(200).json({
       data: session,
     });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 export default {
   startInterview,
   submitInterviewAnswer,

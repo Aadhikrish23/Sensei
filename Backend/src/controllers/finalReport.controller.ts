@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import finalReportService from "../services/finalReport.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-export const createFinalReport = async (
+export const createFinalReport = asyncHandler(async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
+  
     const sessionId = req.params.sessionId as string;
 
     const report = await finalReportService.generateFinalReport(sessionId);
@@ -15,12 +16,8 @@ export const createFinalReport = async (
       status: "SUCCESS",
       data: report,
     });
-  } catch (error) {
-    console.error("Final Report Error:", error);
-
-    next(error);
-  }
-};
+ 
+});
 
 
 export default {createFinalReport}

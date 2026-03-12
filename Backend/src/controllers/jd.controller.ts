@@ -4,9 +4,10 @@ import {
   createJDSchema,
   updateJDSchema,
 } from "../validations/jd.validation.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-const uploadJD = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const uploadJD =asyncHandler( async (req: Request, res: Response, next: NextFunction) => {
+  
     const verifiedData = createJDSchema.parse(req.body);
         if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -28,25 +29,21 @@ const uploadJD = async (req: Request, res: Response, next: NextFunction) => {
         createdAt: jdData.createdAt,
       },
     });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
-const getUserJDs = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const getUserJDs =asyncHandler (async (req: Request, res: Response, next: NextFunction) => {
+ 
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const userId = req.user.id;
     const jdData = await jdService.getUserJDs(userId);
     return res.status(200).json({ data: jdData });
-  } catch (error) {
-    next(error);
-  }
-};
-const getJDById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+ 
+});
+const getJDById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+ 
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -57,12 +54,10 @@ const getJDById = async (req: Request, res: Response, next: NextFunction) => {
     }
     const jdData = await jdService.getJDById(userId, jdid);
     return res.status(200).json({ data: jdData });
-  } catch (error) {
-    next(error);
-  }
-};
-const updateJD = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
+});
+const updateJD = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+ 
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -76,12 +71,10 @@ const updateJD = async (req: Request, res: Response, next: NextFunction) => {
     const jdData = await jdService.updateJD(userId, jdid, verifiedData);
 
     return res.status(200).json({ data: jdData });
-  } catch (error) {
-    next(error);
-  }
-};
-const deleteJD = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
+});
+const deleteJD = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -94,9 +87,7 @@ const deleteJD = async (req: Request, res: Response, next: NextFunction) => {
      return res.status(200).json({
       message: "JD deleted successfully",
     });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
 export default {uploadJD,getJDById,getUserJDs,updateJD,deleteJD}
