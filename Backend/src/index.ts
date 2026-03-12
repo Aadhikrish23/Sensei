@@ -15,7 +15,7 @@ import reportRouter from "./routes/finalReport.routes.js";
 
 const app = express();
 const PORT = 5000;
-const allowedOrgin = process.env.CORS_ALLOWED_ORIGIN || "http://localhost:3000";
+const allowedOrgin = process.env.CORS_ALLOWED_ORIGIN?.split(",") || "http://localhost:3000";
 app.use(
   cors({
     origin: allowedOrgin,

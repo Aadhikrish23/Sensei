@@ -26,7 +26,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       validatedData.password,
     );
     if (userdata.status === "Not Verified") {
-      return res.status(201).json({ Status: "SUCCESS", Data: userdata });
+      return res.status(201).json({ Status: "Not Verified", Data: userdata });
     } else if (userdata.status === "Verified") {
       const accessToken = userdata.accessToken;
       const refreshToken = userdata.refreshToken;

@@ -20,7 +20,7 @@ interface UserData {
   email: string;
   isEmailVerified: boolean;
   createdAt: Date;
-  verificationLink: string;
+
 }
 const userlogin = async (
   email: string,

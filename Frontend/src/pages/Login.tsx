@@ -33,7 +33,7 @@ export default function Login() {
 
       const userdata = await login(email, password);
       if (userdata !== "SUCCESS") {
-        setVerifylink(userdata);
+        toast.success("Verification mail has Sent")
       } else {
         setVerifylink(null);
         navigate("/dashboard");
@@ -136,16 +136,7 @@ export default function Login() {
 
         
 
-          {verifylink && (
-            <a
-              href={verifylink}
-              className="block text-center text-sm 
-                       text-samurai-primary dark:text-ninja-accent 
-                       hover:underline"
-            >
-              Verify your email
-            </a>
-          )}
+         
         </form>
       </div>
     </div>

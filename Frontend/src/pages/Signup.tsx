@@ -3,6 +3,7 @@ import auth from "../api/auth.api";
 import { useTheme } from "../hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 function Signup() {
   const [email, setEmail] = useState<string>("");
@@ -11,7 +12,6 @@ function Signup() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [verifylink, setVerifylink] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
   const [show, setShow] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
@@ -44,7 +44,7 @@ function Signup() {
 
       const userdata = await auth.userSignup(email, password);
       setSuccess(userdata.Status);
-      setVerifylink(userdata.Data.verificationLink);
+        toast.success("Verification mail has Sent")
 
       console.log("loginsuccess");
     } catch (error: any) {
@@ -76,7 +76,7 @@ function Signup() {
              shadow-md
              hover:scale-105 transition-all duration-300"
       >
-        <span className="text-lg">{theme === "light" ? "🌙" : "☀️"}</span>
+        <span className="text-lg">{theme === "samurai" ? "🌙" : "☀️"}</span>
       </button>
 
       <div
@@ -198,9 +198,7 @@ function Signup() {
             <p className="text-sm text-green-600 text-center">{success}</p>
           )}
 
-          {verifylink && (
-            <a className="text-sm text-center block underline">{verifylink}</a>
-          )}
+         
         </form>
       </div>
     </div>

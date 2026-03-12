@@ -2,6 +2,7 @@ import prisma from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jsonwebtoken from "jsonwebtoken";
+import { sendVerificationEmail } from "./email.service.js";
 
 interface payloaddata {
   email: string;
@@ -31,16 +32,16 @@ async function createUser(email: string, password: string) {
     },
   });
 
-  const verificationLink = `${ process.env.CORS_ALLOWED_ORIGIN}/verify-email?token=${token}`;
+const verificationLink =
+  `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  await sendVerificationEmail(email, verificationLink);
 
-  return {
-    id: user.id,
-    email: user.email,
-    isEmailVerified: user.isEmailVerified,
-    createdAt: user.createdAt,
-    verificationLink,
-    token
-  };
+return {
+  id: user.id,
+  email: user.email,
+  isEmailVerified: user.isEmailVerified,
+  createdAt: user.createdAt
+};
 }
 
 async function verifyEmail(token: string) {
@@ -110,13 +111,19 @@ async function loginuser(email: string, password: string) {
         verificationExpires: expiry,
       },
     });
+    console.log("Calling email service for:", email);
 
-    const verificationLink = `${ process.env.CORS_ALLOWED_ORIGIN}/verify-email?token=${token}`;
+   const verificationLink =
+  `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+     console.log("EMAIL FUNCTION START");
+await sendVerificationEmail(email, verificationLink);
+console.log("EMAIL FUNCTION END");
+
 
     return {
       status: "Not Verified",
       isEmailVerified:userdata.isEmailVerified,
-      verificationLink: verificationLink,
+      
     };
   }
   const accessToken = generateToken(userdata.id, userdata.email, "access");

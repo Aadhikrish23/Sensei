@@ -34,10 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userdata = await auth.userlogin(email, password);
     console.log("usedata:", userdata);
     if (!userdata.Data.isEmailVerified) {
-      if (!userdata.Data.verificationLink) {
-        throw new Error("Verification link not sent login again");
-      }
-      return userdata.Data.verificationLink;
+     
+      return userdata.Data.status;
     }
     if (!userdata.Data.accessToken || !userdata.Data.id) {
       throw new Error("Access token missing");
