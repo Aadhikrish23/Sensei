@@ -1,201 +1,258 @@
 import { useEffect, useState } from "react";
 import resumeApi from "../api/resume.api";
 import { Resume, ResumeAnalysis } from "../types/resumes.types";
+
+import { FileText, Trash2, Brain, UploadCloud } from "lucide-react";
+
+import Card from "../components/ui/Card";
+import EmptyState from "../components/ui/EmptyState";
+import Modal from "../components/ui/Modal";
 import AIAnalysisViewer from "../components/AIAnalysisViewer";
+import toast from "react-hot-toast";
+
 export default function Resumes() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [analysis, setAnalysis] = useState<Record<string, ResumeAnalysis>>({});
   const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [openAnalysis, setOpenAnalysis] = useState<Record<string, boolean>>({});
+  const [dragging, setDragging] = useState(false);
+  const [activeAnalysis, setActiveAnalysis] = useState<string | null>(null);
 
-  /* ---------- FETCH RESUMES ---------- */
+  // const [error, setError] = useState<string | null>(null);
+  // const [success, setSuccess] = useState<string | null>(null);
+
+  /* ---------------- FETCH ---------------- */
 
   const fetchResumes = async () => {
     try {
-      const userdata = await resumeApi.getAllResumes();
-      setResumes(userdata.data);
-    } catch (error: any) {
-      setError(error?.response?.data?.message || "Failed to fetch resumes");
-    }
-  };
-
-  /* ---------- UPLOAD ---------- */
-
-  const handleUpload = async () => {
-    if (!file) {
-      setError("Please select a file first");
-      return;
-    }
-
-    try {
-      setError(null);
-      setSuccess(null);
-
-      const formData = new FormData();
-      formData.append("Resume", file);
-
-      await resumeApi.uploadResume(formData);
-
-      setSuccess("Resume uploaded successfully");
-      setFile(null);
-
-      await fetchResumes();
-    } catch (error: any) {
-      setError(error?.response?.data?.message || "Upload failed");
-    }
-  };
-
-  /* ---------- DELETE ---------- */
-
-  const handleDelete = async (id: string) => {
-    try {
-      setError(null);
-      setSuccess(null);
-
-      await resumeApi.deleteResume(id);
-
-      setResumes((prev) => prev.filter((resume) => resume.id !== id));
-
-      setSuccess("Resume deleted successfully");
+      const res = await resumeApi.getAllResumes();
+      setResumes(res.data);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to delete resume");
+      toast.error(err?.response?.data?.message || "Failed to fetch resumes");
     }
-  };
-
-  /* ---------- ANALYZE ---------- */
-
-  const handleAnalyze = async (resumeId: string) => {
-    try {
-      setError(null);
-
-      const result = await resumeApi.analyzeResume(resumeId);
-
-      setAnalysis((prev) => ({
-        ...prev,
-        [resumeId]: result.parsedData,
-      }));
-
-      setOpenAnalysis((prev) => ({
-        ...prev,
-        [resumeId]: true,
-      }));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Resume analysis failed");
-    }
-  };
-
-  const toggleAnalysis = (resumeId: string) => {
-    setOpenAnalysis((prev) => ({
-      ...prev,
-      [resumeId]: !prev[resumeId],
-    }));
   };
 
   useEffect(() => {
     fetchResumes();
   }, []);
 
-  /* ---------- RENDER ---------- */
+  /* ---------------- UPLOAD ---------------- */
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.error("Please select a file");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("Resume", file);
+
+      await resumeApi.uploadResume(formData);
+
+      setFile(null);
+      toast.success("Resume uploaded");
+
+      fetchResumes();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Upload failed");
+    }
+  };
+
+  /* ---------------- DELETE ---------------- */
+
+  const handleDelete = async (id: string) => {
+    try {
+      await resumeApi.deleteResume(id);
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+    } catch (err: any) {
+      toast.error("Delete failed");
+    }
+  };
+
+  /* ---------------- ANALYZE ---------------- */
+
+  const handleAnalyze = async (resumeId: string) => {
+    try {
+      const toastId = toast.loading("Analyzing resume...");
+
+      const result = await resumeApi.analyzeResume(resumeId);
+
+      toast.success("Analysis completed", { id: toastId });
+
+      setAnalysis((prev) => ({
+        ...prev,
+        [resumeId]: result.parsedData,
+      }));
+
+      setActiveAnalysis(resumeId);
+    } catch (err) {
+      toast.error("Resume analysis failed");
+    }
+  };
+
+  /* ---------------- DRAG DROP ---------------- */
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+    }
+  };
+
+  /* ---------------- UI ---------------- */
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
-        Resumes
-      </h1>
+    <div className="space-y-10">
+      {/* TITLE */}
 
-      {/* Upload Section */}
+      <div>
+        <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
+          Resumes
+        </h1>
 
-      <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card">
-        <label className="block mb-2 font-medium">Upload Resume</label>
-
-        <input
-          type="file"
-          onChange={(e) => {
-            const selectedFile = e.target.files?.[0] ?? null;
-            setFile(selectedFile);
-          }}
-        />
-
-        <button
-          onClick={handleUpload}
-          className="mt-4 px-6 py-2 rounded-lg bg-samurai-primary text-white"
-        >
-          Upload
-        </button>
+        <p className="text-samurai-muted dark:text-ninja-muted">
+          Upload and analyze your resumes for interview preparation
+        </p>
       </div>
 
-      {/* Resume List */}
+      {/* UPLOAD AREA */}
 
-      <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card">
-        <h2 className="text-lg font-semibold mb-4">Uploaded Resumes</h2>
+      <Card>
+        <div
+          className={`
+          border-2
+          border-dashed
+          rounded-xl
+          p-10
+          flex flex-col items-center justify-center
+          text-center
+          cursor-pointer
+          transition
+          ${
+            dragging
+              ? "border-samurai-primary bg-samurai-primary/10"
+              : "border-samurai-border dark:border-ninja-border"
+          }
+          `}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+        >
+          <UploadCloud size={36} className="mb-4 text-samurai-primary" />
+
+          <p className="font-medium text-samurai-text dark:text-ninja-text">
+            Drag your resume here
+          </p>
+
+          <p className="text-sm text-samurai-muted dark:text-ninja-muted">or</p>
+
+          <label className="mt-3 cursor-pointer text-samurai-primary dark:text-ninja-accent font-medium">
+            Browse File
+            <input
+              type="file"
+              hidden
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+
+          {file && (
+            <p className="mt-3 text-sm text-green-500">Selected: {file.name}</p>
+          )}
+
+          <button
+            onClick={handleUpload}
+            className="
+            mt-5
+            px-6
+            py-2
+            rounded-lg
+            bg-samurai-primary
+            hover:bg-samurai-primaryHover
+            text-white
+            transition
+            "
+          >
+            Upload Resume
+          </button>
+        </div>
+      </Card>
+
+      {/* RESUME LIST */}
+
+      <Card>
+        <h2 className="text-lg font-semibold mb-6 text-samurai-text dark:text-ninja-text">
+          Your Resumes
+        </h2>
 
         {resumes.length === 0 ? (
-          <p className="text-samurai-muted dark:text-ninja-muted">
-            No resumes uploaded yet
-          </p>
+          <EmptyState
+            icon={FileText}
+            title="No resumes uploaded"
+            description="Upload your first resume to start analysis."
+          />
         ) : (
-          <ul className="space-y-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {resumes.map((resume) => (
-              <li key={resume.id} className="border-b pb-4 space-y-3">
-                {/* Header */}
-
-                <div className="flex justify-between items-center">
-                  <span>{resume.title}</span>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleAnalyze(resume.id)}
-                      className="text-blue-500"
-                    >
-                      Analyze
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(resume.id)}
-                      className="text-red-500"
-                    >
-                      Delete
-                    </button>
-                  </div>
+              <div
+                key={resume.id}
+                className="
+                p-5
+                rounded-lg
+                border
+                border-samurai-border dark:border-ninja-border
+                bg-white dark:bg-[#1e1e26]
+                hover:border-samurai-primary
+                hover:shadow-lg
+                transition
+                "
+              >
+                <div className="flex items-center gap-2 font-medium text-samurai-text dark:text-white mb-3">
+                  <FileText
+                    size={18}
+                    className="text-samurai-primary dark:text-ninja-accent"
+                  />
+                  {resume.title}
                 </div>
 
-                {/* Collapsible Analysis */}
+                <div className="flex gap-4 text-sm">
+                  <button
+                    onClick={() => handleAnalyze(resume.id)}
+                    className="flex items-center gap-1 text-green-500 hover:text-green-400 transition"
+                  >
+                    <Brain size={16} />
+                    Analyze
+                  </button>
 
-                {analysis[resume.id] && (
-                  <div>
-                    <button
-                      onClick={() => toggleAnalysis(resume.id)}
-                      className="text-sm text-blue-500"
-                    >
-                      {openAnalysis[resume.id]
-                        ? "Hide Analysis ▲"
-                        : "View Analysis ▼"}
-                    </button>
-
-                    {openAnalysis[resume.id] && (
-                      <AIAnalysisViewer data={analysis[resume.id]} />
-                    )}
-                  </div>
-                )}
-              </li>
+                  <button
+                    onClick={() => handleDelete(resume.id)}
+                    className="flex items-center gap-1 text-red-500 hover:text-red-400 transition"
+                  >
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
-      </div>
+      </Card>
 
-      {/* Error */}
+      {/* MODAL */}
 
-      {error && (
-        <div className="p-3 rounded bg-red-100 text-red-600">{error}</div>
-      )}
-
-      {/* Success */}
-
-      {success && (
-        <div className="p-3 rounded bg-green-100 text-green-600">{success}</div>
-      )}
+      <Modal
+        open={activeAnalysis !== null}
+        onClose={() => setActiveAnalysis(null)}
+      >
+        {activeAnalysis && analysis[activeAnalysis] && (
+          <AIAnalysisViewer data={analysis[activeAnalysis]} />
+        )}
+      </Modal>
     </div>
   );
 }

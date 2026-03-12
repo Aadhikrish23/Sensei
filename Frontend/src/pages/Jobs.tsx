@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
 import jdApi from "../api/jd.api";
 import AIAnalysisViewer from "../components/AIAnalysisViewer";
+
 import { JobDescription, JDAnalysis } from "../types/jd.types";
 
-export default function Jobs() {
+import Card from "../components/ui/Card";
+import Modal from "../components/ui/Modal";
+import EmptyState from "../components/ui/EmptyState";
 
+import { Briefcase, Trash2, Brain } from "lucide-react";
+import toast from "react-hot-toast";
+
+export default function Jobs() {
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [analysis, setAnalysis] = useState<Record<string, JDAnalysis>>({});
-  const [openAnalysis, setOpenAnalysis] = useState<Record<string, boolean>>({});
+  const [activeAnalysis, setActiveAnalysis] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [roleCategory, setRoleCategory] = useState("");
   const [rawText, setRawText] = useState("");
+
+  // const [error, setError] = useState<string | null>(null);
+  // const [success, setSuccess] = useState<string | null>(null);
 
   /* ---------- FETCH ---------- */
 
@@ -21,14 +31,19 @@ export default function Jobs() {
       setJobs(response.data);
     } catch (error) {
       console.error(error);
+      toast.error("Failed to fetch job descriptions");
     }
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
   /* ---------- CREATE ---------- */
 
   const handleCreateJD = async () => {
     if (!title || !rawText) {
-      alert("Title and JD text are required");
+      toast.error("Title and JD text are required");
       return;
     }
 
@@ -43,9 +58,12 @@ export default function Jobs() {
       setRoleCategory("");
       setRawText("");
 
-      await fetchJobs();
+      toast.success("Job description created");
+
+      fetchJobs();
     } catch (error) {
       console.error(error);
+      toast.error("Failed to create JD");
     }
   };
 
@@ -54,9 +72,13 @@ export default function Jobs() {
   const handleDelete = async (id: string) => {
     try {
       await jdApi.deleteJD(id);
+
       setJobs((prev) => prev.filter((job) => job.id !== id));
+
+      toast.success("Job description deleted");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to delete JD");
     }
   };
 
@@ -64,156 +86,197 @@ export default function Jobs() {
 
   const handleAnalyze = async (jdId: string) => {
     try {
+      const toastId = toast.loading("Analyzing JD...");
 
       const result = await jdApi.analyzeJD(jdId);
+
+      toast.success("Analysis completed", { id: toastId });
 
       setAnalysis((prev) => ({
         ...prev,
         [jdId]: result.parsedData,
       }));
 
-      setOpenAnalysis((prev) => ({
-        ...prev,
-        [jdId]: true,
-      }));
-
+      setActiveAnalysis(jdId);
     } catch (error) {
       console.error(error);
+      toast.error("JD analysis failed");
     }
   };
-
-  const toggleAnalysis = (jdId: string) => {
-    setOpenAnalysis((prev) => ({
-      ...prev,
-      [jdId]: !prev[jdId],
-    }));
-  };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
 
   /* ---------- UI ---------- */
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      {/* PAGE TITLE */}
 
-      <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
-        Job Descriptions
-      </h1>
+      <div>
+        <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
+          Job Descriptions
+        </h1>
 
-      {/* CREATE JD */}
-
-      <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card space-y-4">
-
-        <h2 className="text-lg font-semibold">Create Job Description</h2>
-
-        <input
-          type="text"
-          placeholder="JD Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-
-        <input
-          type="text"
-          placeholder="Role Category (optional)"
-          value={roleCategory}
-          onChange={(e) => setRoleCategory(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-
-        <textarea
-          placeholder="Paste Job Description text here..."
-          value={rawText}
-          onChange={(e) => setRawText(e.target.value)}
-          rows={6}
-          className="w-full p-2 border rounded"
-        />
-
-        <button
-          onClick={handleCreateJD}
-          className="px-6 py-2 rounded-lg bg-samurai-primary text-white"
-        >
-          Create JD
-        </button>
-
+        <p className="text-samurai-muted dark:text-ninja-muted">
+          Manage and analyze job descriptions for interview preparation
+        </p>
       </div>
+
+      {/* CREATE JD CARD */}
+
+      <Card>
+        <h2 className="text-lg font-semibold mb-4 text-samurai-text dark:text-ninja-text">
+          Create Job Description
+        </h2>
+
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="JD Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="
+            w-full
+            p-2
+            rounded-md
+            border
+            border-samurai-border
+            dark:border-ninja-border
+            bg-white
+            dark:bg-[#1e1e26]
+            text-samurai-text
+            dark:text-white
+            "
+          />
+
+          <input
+            type="text"
+            placeholder="Role Category (optional)"
+            value={roleCategory}
+            onChange={(e) => setRoleCategory(e.target.value)}
+            className="
+            w-full
+            p-2
+            rounded-md
+            border
+            border-samurai-border
+            dark:border-ninja-border
+            bg-white
+            dark:bg-[#1e1e26]
+            text-samurai-text
+            dark:text-white
+            "
+          />
+
+          <textarea
+            placeholder="Paste Job Description text here..."
+            value={rawText}
+            onChange={(e) => setRawText(e.target.value)}
+            rows={6}
+            className="
+            w-full
+            p-2
+            rounded-md
+            border
+            border-samurai-border
+            dark:border-ninja-border
+            bg-white
+            dark:bg-[#1e1e26]
+            text-samurai-text
+            dark:text-white
+            "
+          />
+
+          <button
+            onClick={handleCreateJD}
+            className="
+            px-6
+            py-2
+            rounded-lg
+            bg-samurai-primary
+            hover:bg-samurai-primaryHover
+            text-white
+            transition
+            "
+          >
+            Create JD
+          </button>
+        </div>
+      </Card>
 
       {/* JD LIST */}
 
-      <div className="p-6 rounded-lg bg-samurai-card dark:bg-ninja-card">
-
-        <h2 className="text-lg font-semibold mb-4">
-          Job Descriptions
+      <Card>
+        <h2 className="text-lg font-semibold mb-6 text-samurai-text dark:text-ninja-text">
+          Your Job Descriptions
         </h2>
 
         {jobs.length === 0 ? (
-          <p className="text-samurai-muted dark:text-ninja-muted">
-            No job descriptions created yet
-          </p>
+          <EmptyState
+            icon={Briefcase}
+            title="No job descriptions yet"
+            description="Create your first job description to start interview preparation."
+          />
         ) : (
-          <ul className="space-y-4">
-
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map((job) => (
+              <div
+                key={job.id}
+                className="
+                p-5
+                rounded-lg
+                border
+                border-samurai-border
+                dark:border-ninja-border
+                bg-white
+                dark:bg-[#1e1e26]
+                hover:border-samurai-primary
+                hover:shadow-lg
+                transition
+                "
+              >
+                <div className="flex items-center gap-2 font-medium text-samurai-text dark:text-white mb-3">
+                  <Briefcase
+                    size={18}
+                    className="text-samurai-primary dark:text-ninja-accent"
+                  />
 
-              <li key={job.id} className="border-b pb-4 space-y-3">
-
-                <div className="flex justify-between items-center">
-
-                  <span>{job.title}</span>
-
-                  <div className="flex gap-3">
-
-                    <button
-                      onClick={() => handleAnalyze(job.id)}
-                      className="text-blue-500"
-                    >
-                      Analyze
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(job.id)}
-                      className="text-red-500"
-                    >
-                      Delete
-                    </button>
-
-                  </div>
-
+                  {job.title}
                 </div>
 
-                {/* COLLAPSIBLE ANALYSIS */}
+                <div className="flex gap-4 text-sm">
+                  <button
+                    onClick={() => handleAnalyze(job.id)}
+                    className="flex items-center gap-1 text-green-500 hover:text-green-400 transition"
+                  >
+                    <Brain size={16} />
+                    Analyze
+                  </button>
 
-                {analysis[job.id] && (
-                  <div>
-
-                    <button
-                      onClick={() => toggleAnalysis(job.id)}
-                      className="text-sm text-blue-500"
-                    >
-                      {openAnalysis[job.id]
-                        ? "Hide Analysis ▲"
-                        : "View Analysis ▼"}
-                    </button>
-
-                    {openAnalysis[job.id] && (
-                      <AIAnalysisViewer data={analysis[job.id]} />
-                    )}
-
-                  </div>
-                )}
-
-              </li>
-
+                  <button
+                    onClick={() => handleDelete(job.id)}
+                    className="flex items-center gap-1 text-red-500 hover:text-red-400 transition"
+                  >
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
+                </div>
+              </div>
             ))}
-
-          </ul>
+          </div>
         )}
+      </Card>
 
-      </div>
+      {/* MODAL ANALYSIS */}
 
+      <Modal
+        open={activeAnalysis !== null}
+        onClose={() => setActiveAnalysis(null)}
+      >
+        {activeAnalysis && analysis[activeAnalysis] && (
+          <AIAnalysisViewer data={analysis[activeAnalysis]} />
+        )}
+      </Modal>
+
+      {/* FEEDBACK */}
     </div>
   );
 }

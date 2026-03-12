@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import interviewApi from "../api/interview.api";
 import { InterviewSession } from "../types/interview.types";
 
+import Card from "../components/ui/Card";
+import EmptyState from "../components/ui/EmptyState";
+
+import { FileText, Download, ChevronDown, ChevronUp } from "lucide-react";
+import toast from "react-hot-toast";
+
 export default function Reports() {
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
   const [openReport, setOpenReport] = useState<string | null>(null);
@@ -25,9 +31,11 @@ export default function Reports() {
       return;
     }
 
-    // load report if not already loaded
     if (!reports[sessionId]) {
+      const toastId = toast.loading("Generating Report...");
+
       const report = await interviewApi.generateFinalReport(sessionId);
+      toast.success("Analysis completed", { id: toastId });
 
       setReports((prev) => ({
         ...prev,
@@ -56,88 +64,170 @@ export default function Reports() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Interview Reports</h1>
+    <div className="space-y-10 max-w-6xl mx-auto">
+      {/* PAGE HEADER */}
+
+      <div>
+        <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
+          Interview Reports
+        </h1>
+
+        <p className="text-samurai-muted dark:text-ninja-muted">
+          Review your AI interview performance
+        </p>
+      </div>
+
+      {/* EMPTY STATE */}
 
       {sessions.length === 0 ? (
-        <p>No reports available</p>
+        <EmptyState
+          icon={FileText}
+          title="No interview reports yet"
+          description="Complete an interview session to generate your first report."
+        />
       ) : (
-        sessions.map((session) => {
-          const report = reports[session.id];
+        <div className="grid md:grid-cols-2 gap-6">
+          {sessions.map((session) => {
+            const report = reports[session.id];
 
-          return (
-            <div
-              key={session.id}
-              className="p-6 bg-samurai-card rounded space-y-4"
-            >
-              {/* Header */}
+            return (
+              <Card key={session.id}>
+                {/* HEADER */}
 
-              <div className="flex justify-between items-center">
-                <div className="flex-1">
-                  <p className=" font-semibold ">
-                    {session.roleCategory} Interview
-                  </p>
-
-                  <p className="text-sm">
-                    {new Date(session.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => handleDownload(session.id)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded gap-2"
-                  >
-                    Download PDF
-                  </button>
-                  <button
-                    onClick={() => toggleReport(session.id)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded gap-2"
-                  >
-                    {openReport === session.id
-                      ? "Hide Report ▲"
-                      : "View Report ▼"}
-                  </button>
-                </div>
-              </div>
-
-              {/* Collapsible Report */}
-
-              {openReport === session.id && report && (
-                <div className="p-4 bg-gray-100 rounded space-y-4">
+                <div className="flex justify-between items-center mb-4">
                   <div>
-                    <strong>Summary</strong>
+                    <p className="font-semibold text-samurai-text dark:text-white">
+                      {session.roleCategory} Interview
+                    </p>
 
-                    <p>{report.summary}</p>
+                    <p className="text-sm text-samurai-muted dark:text-ninja-muted">
+                      {new Date(session.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
 
-                  <div>
-                    <strong>Strengths</strong>
+                  {/* BUTTONS */}
 
-                    {report.strengths?.map((s: string, i: number) => (
-                      <p key={i}>• {s}</p>
-                    ))}
-                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDownload(session.id)}
+                      className="
+                      flex items-center gap-1
+                      px-3 py-1
+                      text-sm
+                      bg-indigo-600
+                      hover:bg-indigo-700
+                      text-white
+                      rounded
+                      "
+                    >
+                      <Download size={14} />
+                      PDF
+                    </button>
 
-                  <div>
-                    <strong>Weaknesses</strong>
-
-                    {report.weaknesses?.map((w: string, i: number) => (
-                      <p key={i}>• {w}</p>
-                    ))}
-                  </div>
-
-                  <div>
-                    <strong>Recommendations</strong>
-
-                    {report.recommendations?.map((r: string, i: number) => (
-                      <p key={i}>• {r}</p>
-                    ))}
+                    <button
+                      onClick={() => toggleReport(session.id)}
+                      className="
+                      flex items-center gap-1
+                      px-3 py-1
+                      text-sm
+                      bg-blue-600
+                      hover:bg-blue-700
+                      text-white
+                      rounded
+                      "
+                    >
+                      {openReport === session.id ? (
+                        <>
+                          <ChevronUp size={14} />
+                          Hide
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={14} />
+                          View
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-              )}
-            </div>
-          );
-        })
+
+                {/* REPORT CONTENT */}
+
+                {openReport === session.id && report && (
+                  <div className="space-y-4">
+                    {/* SUMMARY */}
+
+                    <div>
+                      <p className="font-semibold mb-1">Summary</p>
+
+                      <p className="text-sm text-samurai-muted dark:text-ninja-muted">
+                        {report.summary}
+                      </p>
+                    </div>
+
+                    {/* STRENGTHS */}
+
+                    <div>
+                      <p className="font-semibold mb-2">Strengths</p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {report.strengths?.map((s: string, i: number) => (
+                          <span
+                            key={i}
+                            className="
+                            px-3 py-1
+                            text-xs
+                            rounded
+                            bg-green-600/20
+                            text-green-400
+                            "
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* WEAKNESSES */}
+
+                    <div>
+                      <p className="font-semibold mb-2">Weaknesses</p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {report.weaknesses?.map((w: string, i: number) => (
+                          <span
+                            key={i}
+                            className="
+                            px-3 py-1
+                            text-xs
+                            rounded
+                            bg-red-600/20
+                            text-red-400
+                            "
+                          >
+                            {w}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* RECOMMENDATIONS */}
+
+                    <div>
+                      <p className="font-semibold mb-2">Recommendations</p>
+
+                      <ul className="text-sm text-samurai-muted dark:text-ninja-muted space-y-1">
+                        {report.recommendations?.map((r: string, i: number) => (
+                          <li key={i}>• {r}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );

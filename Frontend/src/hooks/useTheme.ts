@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 
+type Theme = "samurai" | "ninja";
+
 export function useTheme() {
- const [theme, setTheme] = useState<"light" | "dark">(() => {
-  if (typeof window !== "undefined") {
-    return (localStorage.getItem("theme") as "light" | "dark") || "light";
-  }
-  return "light";
-});
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("theme") as Theme) || "samurai";
+    }
+    return "samurai";
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
 
-    if (theme === "dark") {
+    if (theme === "ninja") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
@@ -21,7 +23,7 @@ export function useTheme() {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === "samurai" ? "ninja" : "samurai"));
   };
 
   return { theme, toggleTheme };

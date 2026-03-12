@@ -57,18 +57,17 @@ export default function Interview() {
       answerText: answer,
     });
 
-if (response.interviewComplete) {
+    if (response.interviewComplete) {
+      setInterviewComplete(true);
 
-  setInterviewComplete(true)
+      const report = await interviewApi.endInterview(sessionId);
 
-  const report = await interviewApi.endInterview(sessionId)
+      navigate("/report", {
+        state: { summary: report.summary },
+      });
 
-  navigate("/report", {
-    state: { summary: report.summary }
-  })
-
-  return
-}
+      return;
+    }
 
     if (response.nextQuestion) {
       setQuestion(response.nextQuestion);
@@ -99,42 +98,125 @@ if (response.interviewComplete) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Sensei AI Interview</h1>
+      {/* HEADER */}
 
-        <span className="text-sm bg-blue-600 text-white px-3 py-1 rounded">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-samurai-text dark:text-ninja-text">
+          Sensei AI Interview
+        </h1>
+
+        <span
+          className="
+        text-sm
+        px-3 py-1
+        rounded-md
+        bg-blue-600
+        text-white
+        "
+        >
           Question {questionNumber}
         </span>
       </div>
 
-      <div className="p-6 rounded-lg bg-samurai-card shadow">
-        <h3 className="text-lg font-semibold mb-3">Interview Question</h3>
+      {/* QUESTION CARD */}
 
-        <p className="text-lg">{question.questionText}</p>
+      <div
+        className="
+      p-6
+      rounded-xl
+      border
+      border-samurai-border
+      dark:border-ninja-border
+      bg-white
+      dark:bg-[#1e1e26]
+      shadow
+      "
+      >
+        <h3 className="text-lg font-semibold mb-3 text-samurai-text dark:text-white">
+          Interview Question
+        </h3>
+
+        <p className="text-lg text-samurai-text dark:text-gray-200 leading-relaxed">
+          {question.questionText}
+        </p>
       </div>
 
+      {/* ANSWER SECTION */}
+
       {!interviewComplete && (
-        <div className="p-6 rounded-lg bg-samurai-card space-y-4">
+        <div
+          className="
+        p-6
+        rounded-xl
+        border
+        border-samurai-border
+        dark:border-ninja-border
+        bg-white
+        dark:bg-[#1e1e26]
+        space-y-4
+        "
+        >
+          <h3 className="font-semibold text-samurai-text dark:text-white">
+            Your Answer
+          </h3>
+
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             rows={8}
-            className="w-full p-4 border rounded"
+            className="
+          w-full
+          p-4
+          rounded-lg
+          border
+          border-samurai-border
+          dark:border-ninja-border
+          bg-white
+          dark:bg-[#111116]
+          text-samurai-text
+          dark:text-white
+          focus:outline-none
+          focus:ring-2
+          focus:ring-samurai-primary
+          "
             placeholder="Explain your answer clearly..."
           />
+
+          {/* ACTION BUTTONS */}
 
           <div className="flex gap-4">
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded"
+              className="
+            px-6 py-2
+            rounded-lg
+            bg-blue-600
+            hover:bg-blue-700
+            text-white
+            transition
+            disabled:opacity-50
+            "
             >
-              {loading ? "Processing..." : "Submit Answer"}
+              {loading ? (
+                <span className="animate-pulse">
+                  Sensei is analyzing your answer...
+                </span>
+              ) : (
+                "Submit Answer"
+              )}
             </button>
 
             <button
               onClick={handleFinishInterview}
-              className="px-6 py-2 bg-red-600 text-white rounded"
+              className="
+            px-6 py-2
+            rounded-lg
+            bg-red-600
+            hover:bg-red-700
+            text-white
+            transition
+            "
             >
               End Interview
             </button>
@@ -142,9 +224,20 @@ if (response.interviewComplete) {
         </div>
       )}
 
+      {/* COMPLETED STATE */}
+
       {interviewComplete && (
-        <div className="p-6 rounded-lg bg-green-100">
-          <h3 className="font-semibold text-green-700">Interview Completed</h3>
+        <div
+          className="
+        p-6
+        rounded-lg
+        bg-green-100
+        dark:bg-green-900/30
+        text-green-700
+        dark:text-green-300
+        "
+        >
+          <h3 className="font-semibold text-lg">Interview Completed</h3>
 
           <p>Your interview has ended. You can now view the report.</p>
         </div>

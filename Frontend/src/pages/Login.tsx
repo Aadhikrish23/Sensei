@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../hooks/useTheme";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [verifylink, setVerifylink] = useState<string | null>(null);
   const [show, setShow] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Login() {
     e.preventDefault();
     try {
       setLoading(true);
-      setError(null);
+     
 
       if (!email.trim()) {
         throw new Error("Invalid email");
@@ -41,7 +42,7 @@ export default function Login() {
     } catch (error: any) {
       const errormsg =
         error instanceof Error ? error.message : error.toString();
-      setError(errormsg);
+      toast.error(errormsg);
     } finally {
       setLoading(false);
     }
@@ -63,7 +64,7 @@ export default function Login() {
              shadow-md
              hover:scale-105 transition-all duration-300"
       >
-        <span className="text-lg">{theme === "light" ? "🌙" : "☀️"}</span>
+        <span className="text-lg">{theme === "samurai" ? "🌙" : "☀️"}</span>
       </button>
       <div className=" w-[90%] sm:w-[400px] md:w-[450px] bg-samurai-card dark:bg-ninja-card p-8 rounded-2xl shadow-xl border border-samurai-border dark:border-ninja-border">
         <h1 className="text-3xl font-bold text-center mb-6 text-samurai-text dark:text-ninja-text">
@@ -133,11 +134,7 @@ export default function Login() {
             </span>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">
-              {error}
-            </p>
-          )}
+        
 
           {verifylink && (
             <a
