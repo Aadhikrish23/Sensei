@@ -1,8 +1,9 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
- host: "smtp-relay.brevo.com",
+  host: "smtp-relay.brevo.com",
   port: 587,
+  secure: false,
   auth: {
     user: process.env.BREVO_USER,
     pass: process.env.BREVO_PASS
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
 export async function sendVerificationEmail(email: string, link: string) {
   try {
     const info = await transporter.sendMail({
-      from: `"Sensei" <${process.env.GMAIL_USER}>`,
+      from: `"Sensei" <sensei.23092002@gmail.com>`,
       to: email,
       subject: "Verify your Sensei account",
       html: `
