@@ -6,6 +6,7 @@ import { QuestionLogModel } from "../models/QuestionLog.js";
 import { AnswerLogModel } from "../models/AnswerLog.js";
 import { EvaluationLogModel } from "../models/EvaluationLog.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 
  const downloadInterviewReportPDF = asyncHandler(async (
   req: Request,
@@ -18,7 +19,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
   });
 
   if (!session || !session.finalReport) {
-    return res.status(404).json({ message: "Report not found" });
+    throw new AppError("Report not found" ,400);
   }
 
   const questions = await QuestionLogModel.find({ sessionId });

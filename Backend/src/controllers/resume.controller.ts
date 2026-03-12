@@ -1,18 +1,19 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import resumeService from "../services/resume.service.js";
 import { renameResumeSchema, resumeIdParamSchema } from "../validations/resume.validation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 const uploadResume = asyncHandler( async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  
 ) => {
  
     if (!req.file) {
-      throw Error("No resume file uploaded");
+      throw new AppError("No resume file uploaded",400);
     }
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
     const userId = req.user.id;
 
@@ -34,13 +35,13 @@ const uploadResume = asyncHandler( async (
 const deleteResume = asyncHandler(async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  
 ) => {
   
     resumeIdParamSchema.parse(req.params);
 
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+     throw new AppError( "Unauthorized" ,401);
     }
 
     await resumeService.deleteResumeService(
@@ -57,13 +58,13 @@ const deleteResume = asyncHandler(async (
 const getResumeById = asyncHandler(async (
   req: Request,
   res: Response,
-  next: NextFunction
+  
 ) => {
  
     resumeIdParamSchema.parse(req.params);
 
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
 
     const resume = await resumeService.getUserResumeById(
@@ -78,10 +79,10 @@ const getResumeById = asyncHandler(async (
   
 });
 
-const getResumes = asyncHandler( async (req: Request, res: Response, next: NextFunction) => {
+const getResumes = asyncHandler( async (req: Request, res: Response, ) => {
   
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
 
     const resumes = await resumeService.getUserResumes(req.user.id);
@@ -95,14 +96,14 @@ const getResumes = asyncHandler( async (req: Request, res: Response, next: NextF
 const renameResume =asyncHandler( async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  
 ) => {
  
     resumeIdParamSchema.parse(req.params);
     renameResumeSchema.parse(req.body);
 
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
 
     const updated = await resumeService.renameResume(

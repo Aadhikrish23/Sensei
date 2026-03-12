@@ -1,16 +1,17 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import interviewService from "../services/interview.service.js";
 import sessionSummaryService from "../services/session-summary/sessionSummary.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 
 const startInterview = asyncHandler(async (
   req: Request,
   res: Response,
-  next: NextFunction,
+ 
 ) => {
   
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
     const userId = req.user.id;
     const { resumeId, jdId, difficulty } = req.body;
@@ -32,21 +33,18 @@ const startInterview = asyncHandler(async (
 const submitInterviewAnswer =asyncHandler (async (
   req: Request,
   res: Response,
-  next: NextFunction,
+ 
 ) => {
 
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
     const userId = req.user.id;
 
     const { sessionId, questionNumber, answerText } = req.body;
 
     if (!sessionId || !questionNumber || !answerText) {
-      return res.status(400).json({
-        status: "ERROR",
-        message: "sessionId, questionNumber and answerText are required",
-      });
+     throw new AppError( "sessionId, questionNumber and answerText are required",401);
     }
 
     const result = await interviewService.submitAnswer(
@@ -66,11 +64,11 @@ const submitInterviewAnswer =asyncHandler (async (
 const endInterview =asyncHandler( async (
   req: Request,
   res: Response,
-  next: NextFunction,
+ 
 ) => {
  
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
 
     const userId = req.user.id;
@@ -91,11 +89,11 @@ const endInterview =asyncHandler( async (
 const getAllSessions =asyncHandler(async (
   req: Request,
   res: Response,
-  next: NextFunction,
+ 
 ) => {
   
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
 
     const session = await interviewService.getAllSession(req.user.id);
@@ -108,11 +106,11 @@ const getAllSessions =asyncHandler(async (
 const getSessionByID = asyncHandler(async (
   req: Request,
   res: Response,
-  next: NextFunction,
+ 
 ) => {
   
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      throw new AppError( "Unauthorized" ,401);
     }
      const sessionId = req.params.sessionId as string;
 

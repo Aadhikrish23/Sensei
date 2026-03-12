@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express"
+import { Request, Response } from "express"
 import sessionSummaryService from "../services/session-summary/sessionSummary.service.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
  const completeInterviewSession = asyncHandler(async (

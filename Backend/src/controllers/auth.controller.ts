@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import authServices from "../services/auth.services.js";
 import authValidation from "../validations/auth.validation.js";
-import { userInfo } from "os";
-import { asyncHandler } from "../utils/asyncHandler.js";
 
-const signup = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
+
+const signup = asyncHandler(async (req: Request, res: Response) => {
   
     const validatedData = authValidation.signupSchema.parse(req.body);
 
@@ -17,7 +18,7 @@ const signup = asyncHandler(async (req: Request, res: Response, next: NextFuncti
   
 });
 
-const login = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+const login = asyncHandler(async (req: Request, res: Response) => {
  
     const validatedData = authValidation.loginSchema.parse(req.body);
     const userdata = await authServices.loginuser(
@@ -46,11 +47,11 @@ const login = asyncHandler(async (req: Request, res: Response, next: NextFunctio
  
 });
 
-const refresh =asyncHandler (async (req: Request, res: Response, next: NextFunction) => {
+const refresh =asyncHandler (async (req: Request, res: Response) => {
  
     const token = req.cookies.refreshToken;
     if (!token) {
-      throw new Error("Session expired login again...");
+      throw new AppError("Session expired login again...",400);
     }
     const { accessToken, refreshToken,userid } = await authServices.refresh(token);
     const refreshDays = parseInt(
@@ -72,7 +73,7 @@ const refresh =asyncHandler (async (req: Request, res: Response, next: NextFunct
     });
  
 });
-const loggout = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+const loggout = asyncHandler(async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
   await authServices.logout(token);
   res.clearCookie("refreshToken", {
@@ -83,12 +84,12 @@ const loggout = asyncHandler(async (req: Request, res: Response, next: NextFunct
 
   return res.status(200).json({ Status: "SUCCESS", Data: "User Logged out " });
 });
-const verifyEmail = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
  
     const token = req.query.token as string;
 
     if (!token) {
-      throw new Error("Verification token is missing");
+      throw new AppError("Verification token is missing",404);
     }
     const { accessToken, refreshToken, userid } =
       await authServices.verifyEmail(token);
