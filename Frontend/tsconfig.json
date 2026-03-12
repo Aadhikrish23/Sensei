@@ -10,5 +10,8 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
-  }
+  },
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
 }
