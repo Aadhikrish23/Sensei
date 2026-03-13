@@ -19,7 +19,7 @@ export default function EmptyState({
         <Icon size={28} />
       </div>
 
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <h3 className="text-lg font-semibold text-samurai-text dark:text-ninja-text">{title}</h3>
 
       <p className="text-sm text-samurai-muted dark:text-ninja-muted max-w-sm">
         {description}

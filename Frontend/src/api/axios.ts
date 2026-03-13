@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
           { withCredentials: true }
         );
 
-        const token = userdata.data.token;
+      const token = userdata.data.Data.accessToken;
 
         tokenServices.setToken(token);
 
