@@ -3,34 +3,46 @@ import resumeService from "../services/resume.service.js";
 import { renameResumeSchema, resumeIdParamSchema } from "../validations/resume.validation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
-const uploadResume = asyncHandler( async (
+import { uploadResumeFile,generateSignedUrl } from "../services/storage.services.js";
+
+import { v4 as uuidv4 } from "uuid";
+import prisma from "../lib/prisma.js";
+const uploadResume = asyncHandler(async (
   req: Request,
   res: Response,
-  
 ) => {
- 
-    if (!req.file) {
-      throw new AppError("No resume file uploaded",400);
-    }
-    if (!req.user) {
-      throw new AppError( "Unauthorized" ,401);
-    }
-    const userId = req.user.id;
 
-    const resumedata = await resumeService.uploadResumeService({
-      userId,
-      filePath: req.file.path,
-      title: req.file.originalname,
-    });
-    return res.status(201).json({
-      message: "Resume uploaded successfully",
-      data: {
-        id: resumedata.id,
-        title: resumedata.title,
-        createdAt: resumedata.createdAt,
-      },
-    });
-  
+  if (!req.file) {
+    throw new AppError("No resume file uploaded",400);
+  }
+
+  if (!req.user) {
+    throw new AppError("Unauthorized",401);
+  }
+
+  const filename = `${req.user.id}-${uuidv4()}.pdf`;
+
+  const key = await uploadResumeFile(
+    req.file.buffer,
+    filename
+  );
+
+  const resumedata = await resumeService.uploadResumeService({
+    userId: req.user.id,
+    buffer: req.file.buffer,
+    key,
+    title: req.file.originalname,
+  });
+
+  return res.status(201).json({
+    message: "Resume uploaded successfully",
+    data: {
+      id: resumedata.id,
+      title: resumedata.title,
+      createdAt: resumedata.createdAt,
+    },
+  });
+
 });
 const deleteResume = asyncHandler(async (
   req: Request,
@@ -119,4 +131,23 @@ const renameResume =asyncHandler( async (
 
  
 });
-export default { uploadResume, deleteResume ,getResumes,renameResume,getResumeById};
+const getResumeDownloadUrl = asyncHandler(async (
+  req: Request,
+  res: Response
+) => {
+
+  if (!req.user) {
+    throw new AppError("Unauthorized",401);
+  }
+
+  const key = await resumeService.getResumeDownloadKey(
+    req.params.id as string,
+    req.user.id
+  );
+
+  const url = await generateSignedUrl(key);
+
+  return res.json({ url });
+
+});
+export default { uploadResume, deleteResume ,getResumes,renameResume,getResumeById,getResumeDownloadUrl};

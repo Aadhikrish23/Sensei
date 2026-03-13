@@ -31,5 +31,10 @@ resumeRouter.patch(
   authenticate,
   resumeController.renameResume
 );
+resumeRouter.get(
+  "/:id/download",
+  authenticate,
+  resumeController.getResumeDownloadUrl
+);
 
 export default resumeRouter;

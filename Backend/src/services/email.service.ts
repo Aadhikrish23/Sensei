@@ -7,7 +7,7 @@ export async function sendVerificationEmail(email: string, link: string) {
     console.log("EMAIL FUNCTION START");
 
     const response = await resend.emails.send({
-      from: "Sensei <onboarding@resend.dev>",
+      from: "Sensei <verify@sensei-ai.site>",
       to: email,
       subject: "Verify your Sensei account",
       html: `
@@ -24,6 +24,9 @@ export async function sendVerificationEmail(email: string, link: string) {
     });
 
     console.log("Email sent:", response);
+    if (!response?.data?.id) {
+  throw new Error("Email sending failed");
+}
 
   } catch (error) {
     console.error("Email sending failed:", error);

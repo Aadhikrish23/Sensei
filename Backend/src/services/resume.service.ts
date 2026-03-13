@@ -5,15 +5,12 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 interface UploadResumeParams {
   userId: string;
-  filePath: string;
+  buffer: Buffer;
+  key: string;
   title: string;
 }
 
-
-
-
-async function extractTextFromPDF(filePath: string): Promise<string> {
-const buffer = await fs.readFile(filePath);   // async read
+async function extractTextFromPDF(buffer: Buffer): Promise<string> {
 
   const data = new Uint8Array(buffer);
   const loadingTask = pdfjsLib.getDocument({ data });
@@ -34,24 +31,23 @@ const buffer = await fs.readFile(filePath);   // async read
 
 async function uploadResumeService({
   userId,
-  filePath,
+  buffer,
+  key,
   title,
 }: UploadResumeParams) {
-  let extractedText = await extractTextFromPDF(filePath);
+
+  let extractedText = await extractTextFromPDF(buffer);
 
   extractedText = extractedText.replace(/[ \t]+/g, " ");
-
   extractedText = extractedText.replace(/\n{2,}/g, "\n");
-
   extractedText = extractedText.replace(/(?<!\n)([A-Z]{3,})/g, "\n$1");
-
   extractedText = extractedText.trim();
 
   const resume = await prisma.resume.create({
     data: {
       userId,
       title,
-      filePath,
+      filePath: key,
       extractedText,
     },
   });
@@ -82,12 +78,7 @@ async function deleteResumeService(
   });
 
   // 3️⃣ Attempt file deletion safely
-  try {
-    await fs.unlink(resumeRecord.filePath);
-  } catch (error) {
-    console.error("File deletion failed:", error);
-    // Do NOT throw — DB already clean
-  }
+ 
 
   return resumeRecord;
 }
@@ -156,4 +147,25 @@ async function renameResume(
 
   return updated;
 }
-export default { uploadResumeService,deleteResumeService,getUserResumes,renameResume,getUserResumeById};
+async function getResumeDownloadKey(
+  resumeId: string,
+  userId: string
+) {
+
+  const resume = await prisma.resume.findFirst({
+    where: {
+      id: resumeId,
+      userId: userId,
+    },
+    select: {
+      filePath: true,
+    },
+  });
+
+  if (!resume) {
+    throw new Error("Resume not found");
+  }
+
+  return resume.filePath;
+}
+export default { uploadResumeService,deleteResumeService,getUserResumes,renameResume,getUserResumeById,getResumeDownloadKey};
