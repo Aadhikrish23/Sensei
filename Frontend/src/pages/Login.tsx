@@ -22,7 +22,6 @@ export default function Login() {
     e.preventDefault();
     try {
       setLoading(true);
-     
 
       if (!email.trim()) {
         throw new Error("Invalid email");
@@ -32,12 +31,13 @@ export default function Login() {
       }
 
       const userdata = await login(email, password);
-      if (userdata !== "SUCCESS") {
-        toast.success("Verification mail has Sent")
-      } else {
-        setVerifylink(null);
+      if (userdata === "Not Verified") {
+        toast.success("Verification email sent. Please verify your email.");
+        return;
+      }
+
+      if (userdata === "SUCCESS") {
         navigate("/dashboard");
-        console.log("loginsuccess");
       }
     } catch (error: any) {
       const errormsg =
@@ -52,7 +52,7 @@ export default function Login() {
     if (accessToken) {
       navigate("/dashboard");
     }
-  }, [accessToken,navigate]);
+  }, [accessToken, navigate]);
   return (
     <div className="min-h-screen flex items-center justify-center bg-samurai-bg dark:bg-ninja-bg transition-colors duration-300">
       <button
@@ -133,10 +133,6 @@ export default function Login() {
               Create User...
             </span>
           </div>
-
-        
-
-         
         </form>
       </div>
     </div>

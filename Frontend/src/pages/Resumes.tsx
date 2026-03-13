@@ -71,25 +71,33 @@ export default function Resumes() {
 
   /* ---------------- ANALYZE ---------------- */
 
-  const handleAnalyze = async (resumeId: string) => {
-    try {
-      const toastId = toast.loading("Analyzing resume...");
+ const handleAnalyze = async (resumeId: string) => {
 
-      const result = await resumeApi.analyzeResume(resumeId);
+  const toastId = toast.loading("Analyzing resume...");
 
-      toast.success("Analysis completed", { id: toastId });
+  try {
 
-      setAnalysis((prev) => ({
-        ...prev,
-        [resumeId]: result.parsedData,
-      }));
+    const result = await resumeApi.analyzeResume(resumeId);
 
-      setActiveAnalysis(resumeId);
-    } catch (err) {
-      toast.error("Resume analysis failed");
-    }
-  };
+    toast.success("Analysis completed", { id: toastId });
 
+    setAnalysis((prev) => ({
+      ...prev,
+      [resumeId]: result.parsedData,
+    }));
+
+    setActiveAnalysis(resumeId);
+
+  } catch (err: any) {
+
+    toast.error(
+      err?.response?.data?.message || "Resume analysis failed",
+      { id: toastId }
+    );
+
+  }
+
+};
   /* ---------------- DRAG DROP ---------------- */
 
   const handleDrop = (e: React.DragEvent) => {

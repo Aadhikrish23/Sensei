@@ -85,24 +85,32 @@ export default function Jobs() {
   /* ---------- ANALYZE ---------- */
 
   const handleAnalyze = async (jdId: string) => {
-    try {
-      const toastId = toast.loading("Analyzing JD...");
 
-      const result = await jdApi.analyzeJD(jdId);
+  const toastId = toast.loading("Analyzing JD...");
 
-      toast.success("Analysis completed", { id: toastId });
+  try {
 
-      setAnalysis((prev) => ({
-        ...prev,
-        [jdId]: result.parsedData,
-      }));
+    const result = await jdApi.analyzeJD(jdId);
 
-      setActiveAnalysis(jdId);
-    } catch (error) {
-      console.error(error);
-      toast.error("JD analysis failed");
-    }
-  };
+    toast.success("Analysis completed", { id: toastId });
+
+    setAnalysis((prev) => ({
+      ...prev,
+      [jdId]: result.parsedData,
+    }));
+
+    setActiveAnalysis(jdId);
+
+  } catch (error: any) {
+
+    toast.error(
+      error?.response?.data?.message || "JD analysis failed",
+      { id: toastId }
+    );
+
+  }
+
+};
 
   /* ---------- UI ---------- */
 
