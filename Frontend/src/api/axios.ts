@@ -11,7 +11,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
-  timeout: 60000
+  timeout: 60000,
 });
 
 console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
@@ -32,7 +32,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !originalRequest?.url?.includes("/auth/login")) {
       console.log("401 detected");
 
       if (originalRequest?._refresh) {
@@ -51,12 +51,14 @@ apiClient.interceptors.response.use(
         const userdata = await axios.post(
           `${API_BASE_URL}/api/auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
-      const token = userdata.data.Data.accessToken;
+        const token = userdata.data.Data.accessToken;
 
         tokenServices.setToken(token);
+
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         originalRequest.headers = originalRequest.headers || {};
 
@@ -65,9 +67,7 @@ apiClient.interceptors.response.use(
         }
 
         return apiClient(originalRequest);
-
       } catch (refreshError) {
-
         tokenServices.clearToken();
         tokenServices.triggerLogout();
 
@@ -80,7 +80,7 @@ apiClient.interceptors.response.use(
     showError(error);
 
     return Promise.reject(error);
-  }
+  },
 );
 
 apiClient.interceptors.request.use(
@@ -96,7 +96,7 @@ apiClient.interceptors.request.use(
   (error) => {
     showError(error);
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;
