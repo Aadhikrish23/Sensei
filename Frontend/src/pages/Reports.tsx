@@ -7,10 +7,11 @@ import EmptyState from "../components/ui/EmptyState";
 
 import { FileText, Download, ChevronDown, ChevronUp } from "lucide-react";
 import toast from "react-hot-toast";
+import Modal from "../components/ui/Modal";
 
 export default function Reports() {
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
-  const [openReport, setOpenReport] = useState<string | null>(null);
+  const [activeReport, setActiveReport] = useState<string | null>(null);
   const [reports, setReports] = useState<Record<string, any>>({});
 
   useEffect(() => {
@@ -25,16 +26,12 @@ export default function Reports() {
     setSessions(completed);
   };
 
-  const toggleReport = async (sessionId: string) => {
-    if (openReport === sessionId) {
-      setOpenReport(null);
-      return;
-    }
-
+  const openReportModal = async (sessionId: string) => {
     if (!reports[sessionId]) {
       const toastId = toast.loading("Generating Report...");
 
       const report = await interviewApi.generateFinalReport(sessionId);
+
       toast.success("Analysis completed", { id: toastId });
 
       setReports((prev) => ({
@@ -43,7 +40,7 @@ export default function Reports() {
       }));
     }
 
-    setOpenReport(sessionId);
+    setActiveReport(sessionId);
   };
 
   const handleDownload = async (sessionId: string) => {
@@ -125,110 +122,90 @@ export default function Reports() {
                     </button>
 
                     <button
-                      onClick={() => toggleReport(session.id)}
+                      onClick={() => openReportModal(session.id)}
                       className="
-                      flex items-center gap-1
-                      px-3 py-1
-                      text-sm
-                      bg-blue-600
-                      hover:bg-blue-700
-                      text-white
-                      rounded
-                      "
+  flex items-center gap-1
+  px-3 py-1
+  text-sm
+  bg-blue-600
+  hover:bg-blue-700
+  text-white
+  rounded
+  "
                     >
-                      {openReport === session.id ? (
-                        <>
-                          <ChevronUp size={14} />
-                          Hide
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown size={14} />
-                          View
-                        </>
-                      )}
+                      <ChevronDown size={14} />
+                      View
                     </button>
                   </div>
                 </div>
 
-                {/* REPORT CONTENT */}
-
-                {openReport === session.id && report && (
-                  <div className="space-y-4">
-                    {/* SUMMARY */}
-
-                    <div>
-                      <p className="font-semibold mb-1">Summary</p>
-
-                      <p className="text-sm text-samurai-muted dark:text-ninja-muted">
-                        {report.summary}
-                      </p>
-                    </div>
-
-                    {/* STRENGTHS */}
-
-                    <div>
-                      <p className="font-semibold mb-2">Strengths</p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {report.strengths?.map((s: string, i: number) => (
-                          <span
-                            key={i}
-                            className="
-                            px-3 py-1
-                            text-xs
-                            rounded
-                            bg-green-600/20
-                            text-green-400
-                            "
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* WEAKNESSES */}
-
-                    <div>
-                      <p className="font-semibold mb-2">Weaknesses</p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {report.weaknesses?.map((w: string, i: number) => (
-                          <span
-                            key={i}
-                            className="
-                            px-3 py-1
-                            text-xs
-                            rounded
-                            bg-red-600/20
-                            text-red-400
-                            "
-                          >
-                            {w}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* RECOMMENDATIONS */}
-
-                    <div>
-                      <p className="font-semibold mb-2">Recommendations</p>
-
-                      <ul className="text-sm text-samurai-muted dark:text-ninja-muted space-y-1">
-                        {report.recommendations?.map((r: string, i: number) => (
-                          <li key={i}>• {r}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
+         
               </Card>
+
             );
           })}
         </div>
       )}
+      <Modal open={activeReport !== null} onClose={() => setActiveReport(null)}>
+
+  {activeReport && reports[activeReport] && (
+
+    <div className="space-y-6">
+
+      <h2 className="text-xl font-bold">
+        Interview Report
+      </h2>
+
+      {/* SUMMARY */}
+
+      <div>
+        <p className="font-semibold mb-1">Summary</p>
+        <p className="text-sm">
+          {reports[activeReport].summary}
+        </p>
+      </div>
+
+      {/* STRENGTHS */}
+
+      <div>
+        <p className="font-semibold mb-2">Strengths</p>
+
+        <div className="flex flex-wrap gap-2">
+          {reports[activeReport].strengths?.map((s: string, i: number) => (
+            <span
+              key={i}
+              className="px-3 py-1 text-xs rounded bg-green-600/20 text-green-400"
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* WEAKNESSES */}
+
+      <div>
+        <p className="font-semibold mb-2">Weaknesses</p>
+
+        <div className="flex flex-wrap gap-2">
+          {reports[activeReport].weaknesses?.map((w: string, i: number) => (
+            <span
+              key={i}
+              className="px-3 py-1 text-xs rounded bg-red-600/20 text-red-400"
+            >
+              {w}
+            </span>
+          ))}
+        </div>
+      </div>
+
+    
+
+    </div>
+
+  )}
+
+</Modal>
     </div>
   );
 }

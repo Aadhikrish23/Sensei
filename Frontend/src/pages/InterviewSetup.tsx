@@ -148,24 +148,17 @@ export default function InterviewSetup() {
                       Resume
                     </button>
                   )}
-
-                  {session.completed && !session.reportGeneratedAt && (
-                    <button
-                      onClick={() => handleGenerateReport(session.id)}
-                      className="px-4 py-2 text-sm bg-green-600 text-white rounded"
-                    >
-                      Generate Report
-                    </button>
-                  )}
-
-                  {session.completed && session.reportGeneratedAt && (
-                    <button
-                      onClick={() => navigate(`/reports`)}
-                      className="px-4 py-2 text-sm bg-purple-600 text-white rounded"
-                    >
-                      View Report
-                    </button>
-                  )}
+                  <div className="mt-2">
+                    {session.completed ? (
+                      <span className="text-xs px-2 py-1 bg-green-600/20 text-green-400 rounded">
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="text-xs px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded">
+                        In Progress
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
