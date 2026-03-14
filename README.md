@@ -1,8 +1,25 @@
 # Sensei – AI Interview Training Platform
 
-Sensei is an **AI-powered interview training platform** that helps users practice technical interviews, analyze their performance, and improve their skills through intelligent feedback.
+<p align="center">
+AI-powered platform for practicing technical interviews with adaptive questioning, resume analysis, and performance insights.
+</p>
 
-The platform simulates real interview environments, evaluates answers using AI, and generates detailed performance reports to help users prepare for real-world technical interviews.
+<p align="center">
+  <img src="images/Dashboard.png" width="900">
+</p>
+
+<p align="center">
+
+![React](https://img.shields.io/badge/Frontend-React-blue)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-green)
+![FastAPI](https://img.shields.io/badge/AI_Service-FastAPI-green)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-green)
+![OpenAI](https://img.shields.io/badge/AI-OpenAI-orange)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)
+
+</p>
 
 ---
 
@@ -107,6 +124,49 @@ Backend API (Node.js + Express)
  └── Cloud Storage
         └── Cloudflare R2
 ```
+
+
+## 📸 Screenshots
+
+### Login Page
+<p align="center">
+  <img src="images/Login.png" width="850"/>
+</p>
+
+### Signup Page
+<p align="center">
+  <img src="images/SignUp.png" width="850"/>
+</p>
+
+### Dashboard
+<p align="center">
+  <img src="images/Dashboard.png" width="900"/>
+</p>
+
+### Resume Upload & Analysis
+<p align="center">
+  <img src="images/Resumes.png" width="900"/>
+</p>
+
+### Job Description Creation
+<p align="center">
+  <img src="images/Jobs.png" width="900"/>
+</p>
+
+### Interview Setup
+<p align="center">
+  <img src="images/InterviewSetup.png" width="900"/>
+</p>
+
+### Interview Session
+<p align="center">
+  <img src="images/InterviewPage.png" width="900"/>
+</p>
+
+### Interview Report
+<p align="center">
+  <img src="images/Reports.png" width="900"/>
+</p>
 
 ---
 
