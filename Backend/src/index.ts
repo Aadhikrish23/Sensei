@@ -18,6 +18,7 @@ import connectMongo from "./lib/mongo.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
+import path from "path";
 
 const app = express();
 
@@ -61,6 +62,7 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: "Too many authentication attempts. Try again later.",
+  skip: (req) => req.method === "OPTIONS",
 });
 
 /*
@@ -78,6 +80,7 @@ app.use(
     credentials: true,
   })
 );
+
 
 /*
 |--------------------------------------------------------------------------
@@ -100,6 +103,11 @@ app.use("/api/ai", aiRouter);
 app.use("/api/interview", interviewRouter);
 app.use("/api/session-summary", sessionSummaryRouter);
 app.use("/api/report", reportRouter);
+
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 
 /*
 |--------------------------------------------------------------------------

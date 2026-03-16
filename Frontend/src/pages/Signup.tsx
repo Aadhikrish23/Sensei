@@ -186,17 +186,8 @@ function Signup() {
             </span>
           </div>
 
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+         
 
-          {loading && (
-            <p className="text-sm text-center text-samurai-muted dark:text-ninja-muted">
-              Loading...
-            </p>
-          )}
-
-          {success && (
-            <p className="text-sm text-green-600 text-center">{success}</p>
-          )}
 
          
         </form>

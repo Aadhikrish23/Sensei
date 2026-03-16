@@ -2,6 +2,7 @@ import aiClient from "../lib/aiClient.js";
 import prisma from "../lib/prisma.js";
 import crypto from "crypto";
 import { buildTopicMatrix } from "./topicMatrixBuilder.js";
+import resumeService from "./resume.service.js";
 
 async function parseJobDescription(jdId: string, userId: string) {
   // 1️⃣ Get JD from DB
@@ -66,6 +67,12 @@ async function parseResume(resumeId: string, userId: string) {
     rawText: Resume.extractedText,
   });
   const parsedData = response.data;
+
+  if (!parsedData.name && !parsedData.email && !parsedData.phone) {
+    const data = await resumeService.deleteResumeService(resumeId, userId);
+    throw new Error("Uploaded file is not a valid resume.");
+  }
+
   const topicMatrix = buildTopicMatrix(parsedData.topics || []);
   const updatedResume = await prisma.resume.update({
     where: {
@@ -129,17 +136,15 @@ async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
 
   const aiResult = aiResponse.data;
 
- const strongSkills = aiResult.strongSkills || [];
-const missingSkills = aiResult.missingSkills || [];
+  const strongSkills = aiResult.strongSkills || [];
+  const missingSkills = aiResult.missingSkills || [];
 
-const partiallyMatchedSkills = aiResult.partiallyMatchedSkills || [];
+  const partiallyMatchedSkills = aiResult.partiallyMatchedSkills || [];
 
-const improvementSuggestions =
-  aiResult.improvement_suggestions ||
-  aiResult.improvementSuggestions ||
-  [];
+  const improvementSuggestions =
+    aiResult.improvement_suggestions || aiResult.improvementSuggestions || [];
 
-const matchPercentage = aiResult.matchPercentage || 0;
+  const matchPercentage = aiResult.matchPercentage || 0;
 
   // 5️⃣ Save Match Result
   const matchResult = await prisma.resumeJDMatch.upsert({
@@ -174,7 +179,6 @@ const matchPercentage = aiResult.matchPercentage || 0;
   });
   return matchResult;
 }
-
 
 export default { parseJobDescription, parseResume, match_jd_resume };
 

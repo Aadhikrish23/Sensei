@@ -33,7 +33,7 @@ export default function Resumes() {
 
   useEffect(() => {
     fetchResumes();
-  }, []);
+  }, [resumes]);
 
   /* ---------------- UPLOAD ---------------- */
 
@@ -94,6 +94,10 @@ export default function Resumes() {
       err?.response?.data?.message || "Resume analysis failed",
       { id: toastId }
     );
+     if (err.message.includes("Invalid resume")) {
+      setResumes((prev) => prev.filter((r) => r.id !== resumeId));
+    }
+
 
   }
 
@@ -172,8 +176,8 @@ export default function Resumes() {
           {file && (
             <p className="mt-3 text-sm text-green-500">Selected: {file.name}</p>
           )}
-
-          <button
+       {file && (
+            <button
             onClick={handleUpload}
             className="
             mt-5
@@ -188,6 +192,8 @@ export default function Resumes() {
           >
             Upload Resume
           </button>
+          )}
+          
         </div>
       </Card>
 
