@@ -9,6 +9,10 @@ const options = {
       description: "API documentation for the Sensei AI Interview Preparation Platform",
     },
     servers: [
+       {
+        url: "https://api.sensei-ai.site",
+        description: "Production Server",
+      },
       {
         url: "http://localhost:5000",
         description: "Local Development Server",
