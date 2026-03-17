@@ -33,7 +33,7 @@ export default function Resumes() {
 
   useEffect(() => {
     fetchResumes();
-  }, [resumes]);
+  }, []); 
 
   /* ---------------- UPLOAD ---------------- */
 
@@ -65,7 +65,6 @@ export default function Resumes() {
       await resumeApi.deleteResume(id);
       setResumes((prev) => prev.filter((r) => r.id !== id));
     } catch (err: any) {
-      toast.error("Delete failed");
     }
   };
 

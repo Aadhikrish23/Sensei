@@ -77,8 +77,7 @@ export default function Jobs() {
 
       toast.success("Job description deleted");
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete JD");
+    
     }
   };
 

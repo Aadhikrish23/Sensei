@@ -49,6 +49,7 @@ const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   message: "Too many requests, please try again later.",
+   skip: (req) => req.method === "OPTIONS",
 });
 
 app.use(globalLimiter);
@@ -95,7 +96,10 @@ app.use(cookieParser());
 | Routes
 |--------------------------------------------------------------------------
 */
-app.use("/api/auth", authLimiter, authRouter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/signup", authLimiter);
+
+app.use("/api/auth", authRouter);
 
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/jd", jdRouter);

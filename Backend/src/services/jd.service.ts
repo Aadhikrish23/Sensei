@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { AppError } from "../utils/AppError.js";
 
 interface UpdateJDParams {
   title?: string;
@@ -94,6 +95,17 @@ async function deleteJD(userId: string, JDId: string) {
     throw new Error("JD not found");
   }
 
+   const sessionCount = await prisma.interviewSession.count({
+    where: { jdId:JDId },
+  });
+
+  if (sessionCount > 0) {
+    throw new AppError(
+      ` Cannot Delete , This JD is used in ${sessionCount} interview session(s)`,
+      400,
+      "JD_IN_USE",
+    );
+  }
   const jdData = await prisma.jobDescription.delete({
     where: {
    

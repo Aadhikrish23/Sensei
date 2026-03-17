@@ -14,8 +14,9 @@ const apiClient = axios.create({
   timeout: 60000,
 });
 
-console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
-
+// -----------------------------
+// 🔥 Error helper
+// -----------------------------
 const showError = (error: any) => {
   const message =
     error?.response?.data?.message ||
@@ -26,63 +27,92 @@ const showError = (error: any) => {
   toast.error(message);
 };
 
+// -----------------------------
+// 🔥 Refresh control (IMPORTANT)
+// -----------------------------
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
+
+// -----------------------------
+// 🔥 Response Interceptor
+// -----------------------------
 apiClient.interceptors.response.use(
   (response) => response,
 
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest?.url?.includes("/auth/login")) {
-      console.log("401 detected");
-
-      if (originalRequest?._refresh) {
-        showError(error);
+    // 🚨 Only handle 401 (not login/refresh)
+    if (
+      error.response?.status === 401 &&
+      !originalRequest?.url?.includes("/auth/login") &&
+      !originalRequest?.url?.includes("/auth/refresh")
+    ) {
+      // Prevent infinite loop
+      if (originalRequest?._retry) {
         return Promise.reject(error);
       }
 
-      if (originalRequest?.url?.includes("/auth/refresh")) {
-        showError(error);
-        return Promise.reject(error);
-      }
-
-      originalRequest._refresh = true;
+      originalRequest._retry = true;
 
       try {
-        const userdata = await axios.post(
-          `${API_BASE_URL}/api/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
+        // 🔒 If already refreshing → wait
+        if (isRefreshing && refreshPromise) {
+          await refreshPromise;
+        } else {
+          // 🔥 Start refresh
+          isRefreshing = true;
 
-        const token = userdata.data.Data.accessToken;
+          refreshPromise = axios.post(
+            `${API_BASE_URL}/api/auth/refresh`,
+            {},
+            { withCredentials: true }
+          );
 
-        tokenServices.setToken(token);
+          const res = await refreshPromise;
 
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          const newToken = res.data.Data.accessToken;
 
-        originalRequest.headers = originalRequest.headers || {};
+          // Save token
+          tokenServices.setToken(newToken);
 
+          // Set default header
+          apiClient.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${newToken}`;
+        }
+
+        // Attach new token to original request
+        const token = tokenServices.getToken();
         if (token) {
+          originalRequest.headers = originalRequest.headers || {};
           originalRequest.headers.Authorization = `Bearer ${token}`;
         }
 
         return apiClient(originalRequest);
       } catch (refreshError) {
+        // ❌ Refresh failed → logout
         tokenServices.clearToken();
         tokenServices.triggerLogout();
 
         showError(refreshError);
 
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
       }
     }
 
+    // Normal errors
     showError(error);
-
     return Promise.reject(error);
-  },
+  }
 );
 
+// -----------------------------
+// 🔥 Request Interceptor
+// -----------------------------
 apiClient.interceptors.request.use(
   (config) => {
     const token = tokenServices.getToken();
@@ -96,7 +126,7 @@ apiClient.interceptors.request.use(
   (error) => {
     showError(error);
     return Promise.reject(error);
-  },
+  }
 );
 
 export default apiClient;
