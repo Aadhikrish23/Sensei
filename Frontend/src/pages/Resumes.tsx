@@ -64,44 +64,34 @@ export default function Resumes() {
     try {
       await resumeApi.deleteResume(id);
       setResumes((prev) => prev.filter((r) => r.id !== id));
-    } catch (err: any) {
-      toast.error("Delete failed");
-    }
+    } catch (err: any) {}
   };
 
   /* ---------------- ANALYZE ---------------- */
 
- const handleAnalyze = async (resumeId: string) => {
+  const handleAnalyze = async (resumeId: string) => {
+    const toastId = toast.loading("Analyzing resume...");
 
-  const toastId = toast.loading("Analyzing resume...");
+    try {
+      const result = await resumeApi.analyzeResume(resumeId);
 
-  try {
+      toast.success("Analysis completed", { id: toastId });
 
-    const result = await resumeApi.analyzeResume(resumeId);
+      setAnalysis((prev) => ({
+        ...prev,
+        [resumeId]: result.parsedData,
+      }));
 
-    toast.success("Analysis completed", { id: toastId });
-
-    setAnalysis((prev) => ({
-      ...prev,
-      [resumeId]: result.parsedData,
-    }));
-
-    setActiveAnalysis(resumeId);
-
-  } catch (err: any) {
-
-    toast.error(
-      err?.response?.data?.message || "Resume analysis failed",
-      { id: toastId }
-    );
-     if (err.message.includes("Invalid resume")) {
-      setResumes((prev) => prev.filter((r) => r.id !== resumeId));
+      setActiveAnalysis(resumeId);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Resume analysis failed", {
+        id: toastId,
+      });
+      if (err.message.includes("Invalid resume")) {
+        setResumes((prev) => prev.filter((r) => r.id !== resumeId));
+      }
     }
-
-
-  }
-
-};
+  };
   /* ---------------- DRAG DROP ---------------- */
 
   const handleDrop = (e: React.DragEvent) => {
@@ -176,10 +166,10 @@ export default function Resumes() {
           {file && (
             <p className="mt-3 text-sm text-green-500">Selected: {file.name}</p>
           )}
-       {file && (
+          {file && (
             <button
-            onClick={handleUpload}
-            className="
+              onClick={handleUpload}
+              className="
             mt-5
             px-6
             py-2
@@ -189,11 +179,10 @@ export default function Resumes() {
             text-white
             transition
             "
-          >
-            Upload Resume
-          </button>
+            >
+              Upload Resume
+            </button>
           )}
-          
         </div>
       </Card>
 

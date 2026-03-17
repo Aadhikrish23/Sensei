@@ -2,6 +2,7 @@ import fs from "fs/promises";
 
 import prisma from "../lib/prisma.js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { AppError } from "../utils/AppError.js";
 
 interface UploadResumeParams {
   userId: string;
@@ -11,7 +12,6 @@ interface UploadResumeParams {
 }
 
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
-
   const data = new Uint8Array(buffer);
   const loadingTask = pdfjsLib.getDocument({ data });
   const pdf = await loadingTask.promise;
@@ -35,7 +35,6 @@ async function uploadResumeService({
   key,
   title,
 }: UploadResumeParams) {
-
   let extractedText = await extractTextFromPDF(buffer);
 
   extractedText = extractedText.replace(/[ \t]+/g, " ");
@@ -55,11 +54,7 @@ async function uploadResumeService({
   return resume;
 }
 
-async function deleteResumeService(
-  resumeId: string,
-  userId: string
-) {
-
+async function deleteResumeService(resumeId: string, userId: string) {
   // 1️⃣ Ownership check
   const resumeRecord = await prisma.resume.findFirst({
     where: {
@@ -69,7 +64,19 @@ async function deleteResumeService(
   });
 
   if (!resumeRecord) {
-    throw new Error("Resume not found");
+    throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");
+  }
+
+  const sessionCount = await prisma.interviewSession.count({
+    where: { resumeId },
+  });
+
+  if (sessionCount > 0) {
+    throw new AppError(
+      ` Cannot Delete , This resume is used in ${sessionCount} interview session(s)`,
+      400,
+      "RESUME_IN_USE",
+    );
   }
 
   // 2️⃣ Delete from DB (source of truth)
@@ -78,7 +85,6 @@ async function deleteResumeService(
   });
 
   // 3️⃣ Attempt file deletion safely
- 
 
   return resumeRecord;
 }
@@ -96,10 +102,7 @@ async function getUserResumes(userId: string) {
 
   return resumes;
 }
-async function getUserResumeById(
-  userId: string,
-  resumeId: string
-) {
+async function getUserResumeById(userId: string, resumeId: string) {
   const resume = await prisma.resume.findFirst({
     where: {
       id: resumeId,
@@ -114,7 +117,7 @@ async function getUserResumeById(
   });
 
   if (!resume) {
-    throw new Error("Resume not found");
+    throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");
   }
 
   return resume;
@@ -122,7 +125,7 @@ async function getUserResumeById(
 async function renameResume(
   resumeId: string,
   userId: string,
-  newTitle: string
+  newTitle: string,
 ) {
   const resume = await prisma.resume.findFirst({
     where: {
@@ -132,7 +135,7 @@ async function renameResume(
   });
 
   if (!resume) {
-    throw new Error("Resume not found");
+    throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");
   }
 
   const updated = await prisma.resume.update({
@@ -147,11 +150,7 @@ async function renameResume(
 
   return updated;
 }
-async function getResumeDownloadKey(
-  resumeId: string,
-  userId: string
-) {
-
+async function getResumeDownloadKey(resumeId: string, userId: string) {
   const resume = await prisma.resume.findFirst({
     where: {
       id: resumeId,
@@ -163,9 +162,16 @@ async function getResumeDownloadKey(
   });
 
   if (!resume) {
-    throw new Error("Resume not found");
+    throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");
   }
 
   return resume.filePath;
 }
-export default { uploadResumeService,deleteResumeService,getUserResumes,renameResume,getUserResumeById,getResumeDownloadKey};
+export default {
+  uploadResumeService,
+  deleteResumeService,
+  getUserResumes,
+  renameResume,
+  getUserResumeById,
+  getResumeDownloadKey,
+};
