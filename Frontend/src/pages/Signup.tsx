@@ -44,7 +44,7 @@ function Signup() {
 
       const userdata = await auth.userSignup(email, password);
       setSuccess(userdata.Status);
-        toast.success("Verification mail has Sent")
+       toast.success("Verification email sent. Check your inbox (and spam folder) for verification email");
 
       console.log("loginsuccess");
     } catch (error: any) {

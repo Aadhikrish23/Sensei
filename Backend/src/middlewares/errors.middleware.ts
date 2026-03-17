@@ -2,16 +2,36 @@ import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { AppError } from "../utils/AppError.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const errorHandler = (
   err: unknown,
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
+  const error =
+    err instanceof Error ? err : new Error("Unknown error occurred");
 
-  console.error("ERROR:", err);
+  // 🧠 Determine status code
+  let statusCode = 500;
 
-  // Zod Validation Error
+  if (err instanceof ZodError) statusCode = 400;
+  else if (err instanceof AppError) statusCode = err.statusCode;
+
+  // 🔥 Choose log level
+  const level = statusCode >= 500 ? "error" : "warn";
+
+  // 🔥 Structured logging
+  req.logger[level]({
+    message: error.message,
+    stack: isProduction ? undefined : error.stack,
+    url: req.originalUrl,
+    method: req.method,
+    statusCode,
+  });
+
+  // 🧪 Zod Error
   if (err instanceof ZodError) {
     return res.status(400).json({
       status: "FAIL",
@@ -19,7 +39,7 @@ export const errorHandler = (
     });
   }
 
-  // Custom App Error
+  // 🧪 App Error
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       status: "ERROR",
@@ -27,16 +47,11 @@ export const errorHandler = (
     });
   }
 
-  // Default Express Error
-  if (err instanceof Error) {
-    return res.status(500).json({
-      status: "ERROR",
-      message: err.message,
-    });
-  }
-
-  return res.status(500).json({
+  // 🧪 Default
+  return res.status(statusCode).json({
     status: "ERROR",
-    message: "Internal Server Error",
+    message: isProduction
+      ? "Something went wrong"
+      : error.message,
   });
 };

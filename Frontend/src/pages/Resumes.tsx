@@ -33,7 +33,7 @@ export default function Resumes() {
 
   useEffect(() => {
     fetchResumes();
-  }, [resumes]);
+  }, []);
 
   /* ---------------- UPLOAD ---------------- */
 

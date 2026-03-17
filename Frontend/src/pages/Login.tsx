@@ -32,7 +32,7 @@ export default function Login() {
 
       const userdata = await login(email, password);
       if (userdata === "Not Verified") {
-        toast.success("Verification email sent. Please verify your email.");
+        toast.success("Verification email sent. Check your inbox (and spam folder) for verification email");
         return;
       }
 

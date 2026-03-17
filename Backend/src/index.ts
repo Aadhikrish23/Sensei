@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
-import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
 import authRouter from "./routes/auth.routes.js";
@@ -19,6 +18,8 @@ import connectMongo from "./lib/mongo.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import path from "path";
+import { requestIdMiddleware } from "./middlewares/requestId.js";
+import { requestLoggerMiddleware } from "./middlewares/requestLogger.js";
 
 const app = express();
 
@@ -38,7 +39,7 @@ app.set("trust proxy", 1);
 */
 app.use(helmet());
 
-app.use(morgan("dev"));
+
 
 /*
 |--------------------------------------------------------------------------
@@ -89,6 +90,17 @@ app.use(
 */
 app.use(express.json());
 app.use(cookieParser());
+
+/*
+|--------------------------------------------------------------------------
+| Logging 
+|--------------------------------------------------------------------------
+*/
+
+app.use(requestIdMiddleware);     
+app.use(requestLoggerMiddleware); 
+
+
 
 /*
 |--------------------------------------------------------------------------
