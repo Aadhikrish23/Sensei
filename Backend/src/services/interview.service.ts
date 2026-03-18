@@ -13,6 +13,7 @@ async function createInterviewSession(
   resumeId: string,
   jdId: string,
   difficulty: "easy" | "medium" | "hard",
+  requestId: string
 ) {
   const resumeData = await prisma.resume.findFirst({
     where: { id: resumeId, userId },
@@ -84,8 +85,16 @@ async function createInterviewSession(
     questionNumber: 1,
   };
 
-  const response = await aiClient.post("/generate-question", aiPayload);
-
+const response = await aiClient.post(
+  "/generate-question",
+  aiPayload,
+  {
+    headers: {
+      "x-request-id": requestId,
+      "x-ai-type": "question_generation",
+    },
+  }
+);
   if (!response.data || !response.data.question) {
     throw new Error("AI service failed to generate question");
   }
@@ -133,6 +142,7 @@ async function submitAnswer(
   sessionId: string,
   questionNumber: number,
   answerText: string,
+  requestId: string
 ) {
   const session = await prisma.interviewSession.findFirst({
     where: {
@@ -178,8 +188,16 @@ async function submitAnswer(
 
   /* ---------- AI Evaluation ---------- */
 
-  const response = await aiClient.post("/evaluate-answer", aiPayload);
-
+const response = await aiClient.post(
+  "/evaluate-answer",
+  aiPayload,
+  {
+    headers: {
+      "x-request-id": requestId,
+      "x-ai-type": "evaluation",
+    },
+  }
+);
   const evaluation = response.data.evaluation;
   const feedback = response.data.feedback;
 
@@ -306,7 +324,7 @@ async function submitAnswer(
 
   /* ---------- Generate Next Question ---------- */
 
-  const next = await generateNextQuestion(nextPayload);
+  const next = await generateNextQuestion(nextPayload,requestId);
 
   /* ---------- NOW write to DB ---------- */
 
@@ -386,8 +404,17 @@ async function submitAnswer(
   };
 }
 
-async function generateNextQuestion(payload: any) {
-  const response = await aiClient.post("/generate-next-question", payload);
+async function generateNextQuestion(payload: any, requestId: string) {
+  const response = await aiClient.post(
+  "/generate-next-question",
+  payload,
+  {
+    headers: {
+      "x-request-id": requestId,
+      "x-ai-type": "question_generation",
+    },
+  }
+);
 
   return response.data;
 }

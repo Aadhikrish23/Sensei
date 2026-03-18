@@ -16,6 +16,10 @@ export const errorHandler = (
   // 🧠 Determine status code
   let statusCode = 500;
 
+  if (!req.logger) {
+  console.error("LOGGER NOT FOUND");
+}
+
   if (err instanceof ZodError) statusCode = 400;
   else if (err instanceof AppError) statusCode = err.statusCode;
 

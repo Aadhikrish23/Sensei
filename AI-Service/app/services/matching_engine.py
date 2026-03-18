@@ -1,7 +1,7 @@
 from app.services.openai_service import call_openai, USE_MOCK
 from app.utils.mock_loader import load_mock
 from app.utils.skill_normalizer import normalize_skill_list
-
+from fastapi import Request
 
 WEIGHTS = {
     "skills": 3,
@@ -90,22 +90,22 @@ Return ONLY valid JSON in this format:
 """
 
 
-def generate_ai_insights(match_result: dict):
+def generate_ai_insights(match_result: dict , request:Request):
 
     prompt = build_matching_prompt(match_result)
 
     if USE_MOCK:
         return load_mock("match_mock.json")
 
-    ai_result = call_openai(prompt)
+    ai_result = call_openai(prompt,request)
 
     return ai_result
 
 
-def match_resume_to_jd(resume_data: dict, jd_data: dict):
+def match_resume_to_jd(resume_data: dict, jd_data: dict,request:Request):
     match_result = calculate_match(resume_data, jd_data)
 
-    ai_insights = generate_ai_insights(match_result)
+    ai_insights = generate_ai_insights(match_result,request)
 
     final_result = {
         **match_result,

@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
   
     const { jdId, userId } = req.body;
 
-    const parsedJD = await aiService.parseJobDescription(jdId, userId);
+    const parsedJD = await aiService.parseJobDescription(jdId, userId, req.requestId);
 
     res.json(parsedJD);
   
@@ -15,7 +15,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
  
     const { resumeId, userId } = req.body;
 
-    const parsedJD = await aiService.parseResume(resumeId, userId);
+    const parsedJD = await aiService.parseResume(resumeId, userId, req.requestId);
 
     res.json(parsedJD);
   
@@ -26,7 +26,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
   
   const { resumeId, jdId } = req.body;
 const userId = (req as any).user.id;
-    const matchedresult = await aiService.match_jd_resume(resumeId, jdId,userId);
+    const matchedresult = await aiService.match_jd_resume(resumeId, jdId,userId, req.requestId);
 
     res.json(matchedresult);
   

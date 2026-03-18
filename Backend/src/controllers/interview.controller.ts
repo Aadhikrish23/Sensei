@@ -20,7 +20,7 @@ const startInterview = asyncHandler(async (
       userId,
       resumeId,
       jdId,
-      difficulty,
+      difficulty,req.requestId
     );
 
     return res.status(201).json({
@@ -51,7 +51,7 @@ const submitInterviewAnswer =asyncHandler (async (
       userId,
       sessionId,
       questionNumber,
-      answerText,
+      answerText,req.requestId
     );
 
     return res.status(200).json({

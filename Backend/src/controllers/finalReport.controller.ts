@@ -10,7 +10,7 @@ export const createFinalReport = asyncHandler(async (
   
     const sessionId = req.params.sessionId as string;
 
-    const report = await finalReportService.generateFinalReport(sessionId);
+    const report = await finalReportService.generateFinalReport(sessionId,req.requestId);
 
     return res.json({
       status: "SUCCESS",

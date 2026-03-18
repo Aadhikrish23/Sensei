@@ -4,7 +4,11 @@ import crypto from "crypto";
 import { buildTopicMatrix } from "./topicMatrixBuilder.js";
 import resumeService from "./resume.service.js";
 
-async function parseJobDescription(jdId: string, userId: string) {
+async function parseJobDescription(
+  jdId: string,
+  userId: string,
+  requestId: string,
+) {
   // 1️⃣ Get JD from DB
   const jd = await prisma.jobDescription.findFirst({
     where: {
@@ -24,10 +28,18 @@ async function parseJobDescription(jdId: string, userId: string) {
   }
 
   // 2️⃣ Call FastAPI AI service
-  const response = await aiClient.post("/parse-jd", {
-    rawText: jd.rawText,
-  });
-
+  const response = await aiClient.post(
+    "/parse-jd",
+    {
+      rawText: jd.rawText,
+    },
+    {
+      headers: {
+        "x-request-id": requestId,
+        "x-ai-type": "resume_analysis",
+      },
+    },
+  );
   const parsedData = response.data;
   const topicMatrix = buildTopicMatrix(parsedData.topics || []);
 
@@ -46,7 +58,11 @@ async function parseJobDescription(jdId: string, userId: string) {
   return updatedJD;
 }
 
-async function parseResume(resumeId: string, userId: string) {
+async function parseResume(
+  resumeId: string,
+  userId: string,
+  requestId: string,
+) {
   const Resume = await prisma.resume.findFirst({
     where: {
       id: resumeId,
@@ -63,9 +79,18 @@ async function parseResume(resumeId: string, userId: string) {
       parsedData: Resume.parsedData,
     };
   }
-  const response = await aiClient.post("/parse-resume", {
-    rawText: Resume.extractedText,
-  });
+  const response = await aiClient.post(
+    "/parse-resume",
+    {
+      rawText: Resume.extractedText,
+    },
+    {
+      headers: {
+        "x-request-id": requestId,
+        "x-ai-type": "resume_analysis",
+      },
+    },
+  );
   const parsedData = response.data;
 
   if (!parsedData.name && !parsedData.email && !parsedData.phone) {
@@ -86,7 +111,12 @@ async function parseResume(resumeId: string, userId: string) {
   return updatedResume;
 }
 
-async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
+async function match_jd_resume(
+  resumeId: string,
+  jdId: string,
+  userId: string,
+  requestId: string,
+) {
   const resume = await prisma.resume.findFirst({
     where: {
       id: resumeId,
@@ -129,10 +159,19 @@ async function match_jd_resume(resumeId: string, jdId: string, userId: string) {
     return existingMatch;
   }
 
-  const aiResponse = await aiClient.post("/match-resume-jd", {
-    resume_data: resume.parsedData,
-    jd_data: jd.parsedData,
-  });
+  const aiResponse = await aiClient.post(
+    "/match-resume-jd",
+    {
+      resume_data: resume.parsedData,
+      jd_data: jd.parsedData,
+    },
+    {
+      headers: {
+        "x-request-id": requestId,
+        "x-ai-type": "evaluation",
+      },
+    },
+  );
 
   const aiResult = aiResponse.data;
 

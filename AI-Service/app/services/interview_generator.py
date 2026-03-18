@@ -12,7 +12,7 @@ from app.services.skill_graph_manager import (
 from app.utils.interview_memory_guard import extract_asked_skills, extract_questions
 
 
-async def generate_question(data):
+async def generate_question(data, request):
 
     strong_skills = data.matchAnalysis.strongSkills
     missing_skills = data.matchAnalysis.missingSkills
@@ -44,14 +44,13 @@ Return ONLY this JSON structure:
 }}
 """
 
-    response = call_openai(prompt)
-
+    response = call_openai(prompt, request)
 
 
     return response
 
 
-async def evaluate_answer(data):
+async def evaluate_answer(data, request):
 
     prompt = f"""
 You are a senior technical interviewer.
@@ -89,8 +88,7 @@ Return ONLY JSON:
 }}
 """
 
-    response = call_openai(prompt)
-
+    response = call_openai(prompt, request)
 
 
     return response
@@ -105,7 +103,8 @@ async def generate_next_question(
         evaluation_score,
         skill_tags,
         skill_graph,
-        interview_history
+        interview_history,
+        request
 ):
 
     skill_graph = update_skill_graph(
@@ -188,8 +187,7 @@ async def generate_next_question(
     }}
     """
 
-    response = call_openai(prompt)
-
+    response = call_openai(prompt, request)
     question_data = response
 
     return {

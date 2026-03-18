@@ -1,7 +1,7 @@
 from app.services.openai_service import USE_MOCK, call_openai
 from app.utils.mock_loader import load_mock
 from app.utils.skill_normalizer import normalize_resume_data
-
+from fastapi import Request
 
 def build_resume_prompt(text: str):
     return f"""
@@ -44,14 +44,14 @@ Resume Text:
 """
 
 
-def parse_resume_with_ai(raw_text: str):
+def parse_resume_with_ai(raw_text: str,request:Request):
     try:
         if USE_MOCK:
             return load_mock("resume_mock.json")
 
         prompt = build_resume_prompt(raw_text)
 
-        parsed = call_openai(prompt)
+        parsed = call_openai(prompt,request)
 
         normalized = normalize_resume_data(parsed)
 

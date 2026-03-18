@@ -70,7 +70,7 @@ async function deleteResumeService(resumeId: string, userId: string) {
   const sessionCount = await prisma.interviewSession.count({
     where: { resumeId },
   });
-
+  console.error("sessionCount",sessionCount);
   if (sessionCount > 0) {
     throw new AppError(
       ` Cannot Delete , This resume is used in ${sessionCount} interview session(s)`,

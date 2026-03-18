@@ -18,12 +18,17 @@ import connectMongo from "./lib/mongo.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import path from "path";
-import { requestIdMiddleware } from "./middlewares/requestId.js";
-import { requestLoggerMiddleware } from "./middlewares/requestLogger.js";
+import { requestIdMiddleware } from "./middlewares/requestId.middleware.js";
+import { requestLoggerMiddleware } from "./middlewares/requestLogger.middleware.js";
+
+import { initSentry, Sentry } from "./lib/sentry.js";
+import logger from "./utils/logger/logger.js";
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
+
+initSentry();
 
 /*
 |--------------------------------------------------------------------------
@@ -39,34 +44,6 @@ app.set("trust proxy", 1);
 */
 app.use(helmet());
 
-
-
-/*
-|--------------------------------------------------------------------------
-| Rate Limiter
-|--------------------------------------------------------------------------
-*/
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: "Too many requests, please try again later.",
-   skip: (req) => req.method === "OPTIONS",
-});
-
-app.use(globalLimiter);
-
-/*
-|--------------------------------------------------------------------------
-| Auth Rate Limiter (stricter)
-|--------------------------------------------------------------------------
-*/
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: "Too many authentication attempts. Try again later.",
-  skip: (req) => req.method === "OPTIONS",
-});
-
 /*
 |--------------------------------------------------------------------------
 | CORS Configuration
@@ -80,10 +57,8 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-  })
+  }),
 );
-
-
 /*
 |--------------------------------------------------------------------------
 | Parsers
@@ -97,10 +72,92 @@ app.use(cookieParser());
 | Logging 
 |--------------------------------------------------------------------------
 */
+app.use(requestIdMiddleware);
+app.use(requestLoggerMiddleware);
 
-app.use(requestIdMiddleware);     
-app.use(requestLoggerMiddleware); 
 
+/*
+|--------------------------------------------------------------------------
+| Rate Limiter
+|--------------------------------------------------------------------------
+*/
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  skip: (req) => req.method === "OPTIONS",
+
+  handler: (req, res) => {
+    req.logger?.warn({
+      event: "RATE_LIMIT_HIT",
+      type: "GLOBAL",
+      requestId: req.requestId,
+     method: req.method,
+      userId: req.user?.id,
+      url: req.originalUrl,
+    });
+
+    res.status(429).json({
+      status: "FAIL",
+      message: "Too many requests, please try again later.",
+    });
+  },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth Rate Limiter 
+|--------------------------------------------------------------------------
+*/
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  skip: (req) => req.method === "OPTIONS",
+
+  handler: (req, res) => {
+    req.logger?.warn({
+      event: "RATE_LIMIT_HIT",
+      type: "AUTH",
+      requestId: req.requestId,
+      method: req.method,
+      userId: req.user?.id,
+      url: req.originalUrl,
+    });
+
+    res.status(429).json({
+      status: "FAIL",
+      message: "Too many authentication attempts. Try again later.",
+    });
+  },
+});
+/*
+|--------------------------------------------------------------------------
+| AI Rate Limiter 
+|--------------------------------------------------------------------------
+*/
+const aiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  skip: (req) => req.method === "OPTIONS",
+
+  handler: (req, res) => {
+    req.logger?.warn({
+      event: "RATE_LIMIT_HIT",
+      type: "AI",
+      requestId: req.requestId,
+      method: req.method,
+      userId: req.user?.id,
+      url: req.originalUrl,
+    });
+
+    res.status(429).json({
+      status: "FAIL",
+      message: "Too many AI requests. Please slow down.",
+    });
+  },
+});
+
+
+app.use(globalLimiter); 
 
 
 /*
@@ -115,15 +172,12 @@ app.use("/api/auth", authRouter);
 
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/jd", jdRouter);
-app.use("/api/ai", aiRouter);
-app.use("/api/interview", interviewRouter);
+app.use("/api/ai", aiLimiter, aiRouter);
+app.use("/api/interview", aiLimiter, interviewRouter);
 app.use("/api/session-summary", sessionSummaryRouter);
-app.use("/api/report", reportRouter);
+app.use("/api/report", aiLimiter, reportRouter);
 
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 /*
 |--------------------------------------------------------------------------
@@ -136,8 +190,9 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
-
-
+app.get("/test-error", (req, res) => {
+  throw new Error("Sentry working 🚨");
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +206,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 | Global Error Handler
 |--------------------------------------------------------------------------
 */
+Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 /*
@@ -163,10 +219,12 @@ const startServer = async () => {
     await connectMongo();
 
     app.listen(PORT, () => {
-      console.log(`🚀 Sensei backend running on port ${PORT}`);
+      // console.log(`🚀 Sensei backend running on port ${PORT}`);
+      logger.info(`🚀 Sensei backend running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Failed to start server:", error);
+    // console.error("❌ Failed to start server:", error);
+    logger.error("❌ Failed to start server:" + error);
     process.exit(1);
   }
 };
