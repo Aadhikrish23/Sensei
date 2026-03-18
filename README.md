@@ -66,6 +66,16 @@ Medium Question → Score ≤ 4 → Easy Question
 This creates a **progressive and personalized interview experience**, similar to real technical interviews.
 
 ---
+## 🔍 Observability
+
+- Structured logging with **Pino** (dev + production)
+- Request tracing using unique `requestId`
+- AI interaction logging (requests, responses, errors, latency)
+- Centralized error handling with **Sentry integration**
+- Layered rate limiting (global, auth, AI endpoints)
+- File-based logging with rotation (development)
+
+---
 
 ## 🏗️ Tech Stack
 
