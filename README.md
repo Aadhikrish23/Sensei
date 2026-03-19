@@ -211,7 +211,7 @@ Backend API (Node.js + Express)
 
 ## 👨‍💻 Author
 
-**Aadhi Narayanan**
+**Aadhinarayanan Krishnamoorthy**
 
 GitHub  
 https://github.com/Aadhikrish23
