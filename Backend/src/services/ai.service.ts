@@ -3,6 +3,7 @@ import prisma from "../lib/prisma.js";
 import crypto from "crypto";
 import { buildTopicMatrix } from "./topicMatrixBuilder.js";
 import resumeService from "./resume.service.js";
+import { AppError } from "../utils/AppError.js";
 
 async function parseJobDescription(
   jdId: string,
@@ -18,8 +19,7 @@ async function parseJobDescription(
   });
 
   if (!jd) {
-    throw new Error("JD not found");
-  }
+throw new AppError("Job description not found", 404, "JD_NOT_FOUND");  }
 
   if (jd.parsedData) {
     return {
@@ -71,8 +71,7 @@ async function parseResume(
   });
 
   if (!Resume) {
-    throw new Error("JD not found");
-  }
+throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");  }
 
   if (Resume.parsedData) {
     return {
@@ -95,8 +94,11 @@ async function parseResume(
 
   if (!parsedData.name && !parsedData.email && !parsedData.phone) {
     const data = await resumeService.deleteResumeService(resumeId, userId);
-    throw new Error("Uploaded file is not a valid resume.");
-  }
+throw new AppError(
+  "Uploaded file is not a valid resume",
+  400,
+  "INVALID_RESUME"
+);  }
 
   const topicMatrix = buildTopicMatrix(parsedData.topics || []);
   const updatedResume = await prisma.resume.update({
@@ -125,8 +127,7 @@ async function match_jd_resume(
   });
 
   if (!resume) {
-    throw new Error("Resume not found");
-  }
+throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");  }
 
   // 2️⃣ Fetch job description
   const jd = await prisma.jobDescription.findFirst({
@@ -137,12 +138,14 @@ async function match_jd_resume(
   });
 
   if (!jd) {
-    throw new Error("Job description not found");
-  }
+throw new AppError("Job description not found", 404, "JD_NOT_FOUND");  }
 
   if (!resume.parsedData || !jd.parsedData) {
-    throw new Error("Resume or JD not parsed yet");
-  }
+throw new AppError(
+  "Resume or Job Description not analyzed yet",
+  400,
+  "DATA_NOT_PARSED"
+);  }
 
   const resumeVersionHash = generateHash(resume.parsedData);
   const jdVersionHash = generateHash(jd.parsedData);

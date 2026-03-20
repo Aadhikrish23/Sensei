@@ -33,9 +33,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<string> => {
     const userdata = await auth.userlogin(email, password);
     console.log("usedata:", userdata);
+
+      if (!userdata || !userdata.Data) {
+      throw new Error("Login failed");
+    }
+
+    // 🟡 Email not verified
     if (!userdata.Data.isEmailVerified) {
       return userdata.Data.status;
     }
+
+    // 🔴 Missing token (critical)
     if (!userdata.Data.accessToken || !userdata.Data.id) {
       throw new Error("Access token missing");
     }
@@ -95,20 +103,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasInitialized.current = true;
 
     const initialize = async () => {
-      try {
-        const userdata = await auth.userRefresh();
+  const storedToken = tokenServices.getToken();
 
-        if (userdata.Data.accessToken && userdata.Data.id) {
-          setAccessToken(userdata.Data.accessToken);
-          setUser({ userid: userdata.Data.id });
-          tokenServices.setToken(userdata.Data.accessToken);
-        }
-      } catch {
-        // ignore
-      } finally {
-        setHasAttemptedRefresh(true);
-      }
-    };
+  // 🔥 CRITICAL GUARD
+  if (!storedToken) {
+    setHasAttemptedRefresh(true);
+    return;
+  }
+
+  try {
+    const userdata = await auth.userRefresh();
+
+    if (userdata.Data.accessToken && userdata.Data.id) {
+      setAccessToken(userdata.Data.accessToken);
+      setUser({ userid: userdata.Data.id });
+      tokenServices.setToken(userdata.Data.accessToken);
+    }
+  } catch {
+    // ignore silently
+  } finally {
+    setHasAttemptedRefresh(true);
+  }
+};
 
     initialize();
   }, []);

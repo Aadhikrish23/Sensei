@@ -30,6 +30,7 @@ export async function sendVerificationEmail(email: string, link: string) {
 
   } catch (error) {
     console.error("Email sending failed:", error);
+    throw new Error("Failed to send verification email");
   }
 
   console.log("EMAIL FUNCTION END");

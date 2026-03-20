@@ -7,6 +7,7 @@ import { EvaluationLogModel } from "../models/EvaluationLog.js";
 
 import { createAnswer } from "../repositories/answer.mongo.repo.js";
 import { createEvaluation } from "../repositories/evaluation.mongo.repo.js";
+import { AppError } from "../utils/AppError.js";
 
 async function createInterviewSession(
   userId: string,
@@ -20,17 +21,31 @@ async function createInterviewSession(
   });
 
   if (!resumeData) {
-    throw new Error("Resume not found");
-  }
+ throw new AppError("Resume not found", 404, "RESUME_NOT_FOUND");  }
 
   const jdData = await prisma.jobDescription.findFirst({
     where: { id: jdId, userId },
   });
 
   if (!jdData) {
-    throw new Error("JD not found");
+  throw new AppError("Job description not found", 404, "JD_NOT_FOUND");
   }
 
+  if (!resumeData.parsedData) {
+  throw new AppError(
+    "Resume not analyzed yet",
+    400,
+    "RESUME_NOT_PARSED"
+  );
+}
+
+if (!jdData.parsedData) {
+  throw new AppError(
+    "Job description not parsed yet",
+    400,
+    "JD_NOT_PARSED"
+  );
+}
   const existingSession = await prisma.interviewSession.findFirst({
     where: {
       userId,
@@ -41,8 +56,8 @@ async function createInterviewSession(
   });
 
   if (existingSession) {
-    throw new Error(
-      "An active interview already exists for this Resume and JD",
+    throw new AppError(
+      "An active interview already exists for this Resume and JD",400,"INTERVIEW-EXISTS"
     );
   }
 
@@ -152,12 +167,19 @@ async function submitAnswer(
   });
 
   if (!session) {
-    throw new Error("Interview session not found");
-  }
+  throw new AppError(
+    "Interview session not found",
+    404,
+    "SESSION_NOT_FOUND"
+  );
+}
 
   if (session.completed) {
-    throw new Error("Interview session already completed");
-  }
+ throw new AppError(
+    "Interview already completed",
+    400,
+    "SESSION_COMPLETED"
+  );  }
 
   const question = await questionMongoRepo.getQuestion({
     sessionId,
@@ -165,8 +187,11 @@ async function submitAnswer(
   });
 
   if (!question) {
-    throw new Error("Question not found");
-  }
+throw new AppError(
+    "Question not found",
+    404,
+    "QUESTION_NOT_FOUND"
+  );  }
 
   const resume = await prisma.resume.findUnique({
     where: { id: session.resumeId },
@@ -176,6 +201,13 @@ async function submitAnswer(
     where: { id: session.jdId },
   });
 
+  if (!resume?.parsedData || !jd?.parsedData) {
+  throw new AppError(
+    "Resume or JD not parsed yet",
+    400,
+    "DATA_NOT_READY"
+  );
+}
   const aiPayload = {
     questionText: question.questionText,
     answerText: answerText,
@@ -428,12 +460,18 @@ async function endInterviewSession(userId: string, sessionId: string) {
   });
 
   if (!session) {
-    throw new Error("Interview session not found");
-  }
+ throw new AppError(
+    "Interview session not found",
+    404,
+    "SESSION_NOT_FOUND"
+  );  }
 
   if (session.completed) {
-    throw new Error("Interview already completed");
-  }
+throw new AppError(
+    "Interview already completed",
+    400,
+    "SESSION_COMPLETED"
+  );  }
 
   await prisma.interviewSession.update({
     where: { id: sessionId },
@@ -466,9 +504,7 @@ async function getAllSession(userid: string) {
     },
   });
 
-  if (!session) {
-    throw new Error("Interview session not found");
-  }
+ 
   return session;
 }
 async function getSessionById(userid: string, sessionId: string) {
@@ -492,8 +528,11 @@ async function getSessionById(userid: string, sessionId: string) {
   });
   const latestQuestion = await questionMongoRepo.getLatestQuestion(sessionId);
   if (!session) {
-    throw new Error("Interview session not found");
-  }
+throw new AppError(
+    "Interview session not found",
+    404,
+    "SESSION_NOT_FOUND"
+  );  }
   return { session, question: latestQuestion };
 }
 export default {

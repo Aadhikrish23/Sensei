@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jsonwebtoken from "jsonwebtoken";
 import { sendVerificationEmail } from "./email.service.js";
+import { AppError } from "../utils/AppError.js";
 
 interface payloaddata {
   email: string;
@@ -16,7 +17,7 @@ async function createUser(email: string, password: string) {
   });
 
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new AppError("User already exists", 400, "USER_EXISTS");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,16 +33,15 @@ async function createUser(email: string, password: string) {
     },
   });
 
-const verificationLink =
-  `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
   await sendVerificationEmail(email, verificationLink);
 
-return {
-  id: user.id,
-  email: user.email,
-  isEmailVerified: user.isEmailVerified,
-  createdAt: user.createdAt
-};
+  return {
+    id: user.id,
+    email: user.email,
+    isEmailVerified: user.isEmailVerified,
+    createdAt: user.createdAt,
+  };
 }
 
 async function verifyEmail(token: string) {
@@ -50,11 +50,19 @@ async function verifyEmail(token: string) {
   });
 
   if (!user) {
-    throw new Error("Invalid or expired verification link");
+    throw new AppError(
+      "Invalid or expired verification link",
+      400,
+      "INVALID_TOKEN",
+    );
   }
 
   if (!user.verificationExpires || user.verificationExpires < new Date()) {
-    throw new Error("Invalid or expired verification link");
+    throw new AppError(
+      "Invalid or expired verification link",
+      400,
+      "INVALID_TOKEN",
+    );
   }
 
   const accessToken = generateToken(user.id, user.email, "access");
@@ -81,8 +89,8 @@ async function verifyEmail(token: string) {
   });
 
   return {
-     userid:user.id,
-     isEmailVerified:user.isEmailVerified,
+    userid: user.id,
+    isEmailVerified: user.isEmailVerified,
     accessToken,
     refreshToken,
   };
@@ -93,12 +101,12 @@ async function loginuser(email: string, password: string) {
     where: { email: email },
   });
   if (!userdata) {
-    throw new Error(" Invalid credentials");
+    throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
   }
 
   const validpassword = await bcrypt.compare(password, userdata.password);
   if (!validpassword) {
-    throw new Error(" Invalid credentials");
+    throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
   }
   if (!userdata.isEmailVerified) {
     const token = crypto.randomBytes(32).toString("hex");
@@ -113,17 +121,14 @@ async function loginuser(email: string, password: string) {
     });
     console.log("Calling email service for:", email);
 
-   const verificationLink =
-  `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
-     console.log("EMAIL FUNCTION START");
-await sendVerificationEmail(email, verificationLink);
-console.log("EMAIL FUNCTION END");
-
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    console.log("EMAIL FUNCTION START");
+    await sendVerificationEmail(email, verificationLink);
+    console.log("EMAIL FUNCTION END");
 
     return {
       status: "Not Verified",
-      isEmailVerified:userdata.isEmailVerified,
-      
+      isEmailVerified: userdata.isEmailVerified,
     };
   }
   const accessToken = generateToken(userdata.id, userdata.email, "access");
@@ -148,8 +153,8 @@ console.log("EMAIL FUNCTION END");
 
   return {
     status: "Verified",
-    id:userdata.id,
-    isEmailVerified:userdata.isEmailVerified,
+    id: userdata.id,
+    isEmailVerified: userdata.isEmailVerified,
     accessToken,
     refreshToken,
   };
@@ -170,10 +175,10 @@ async function refresh(token: string) {
     },
   });
   if (!userdata || validtoken.email !== userdata.email) {
-    throw new Error("Session expired login again...");
+    throw new AppError("Session expired, login again", 401, "SESSION_EXPIRED");
   }
   if (!userdata.refreshExpires || userdata.refreshExpires < new Date()) {
-    throw new Error("Session expired login again...");
+    throw new AppError("Session expired, login again", 401, "SESSION_EXPIRED");
   }
   const accessToken = generateToken(userdata.id, userdata.email, "access");
   const refreshToken = generateToken(userdata.id, userdata.email, "refresh");
@@ -196,7 +201,7 @@ async function refresh(token: string) {
   });
 
   return {
-    userid:userdata.id,
+    userid: userdata.id,
     accessToken,
     refreshToken,
   };
@@ -217,7 +222,7 @@ async function logout(token: string) {
     },
   });
   if (!userdata || validtoken.email !== userdata.email) {
-    throw new Error("Session expired login again...");
+    throw new AppError("Session expired, login again", 401, "SESSION_EXPIRED");
   }
   const userlogout = await prisma.user.update({
     data: { refreshToken: null, refreshExpires: null },

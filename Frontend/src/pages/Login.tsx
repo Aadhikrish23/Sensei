@@ -42,7 +42,7 @@ export default function Login() {
     } catch (error: any) {
       const errormsg =
         error instanceof Error ? error.message : error.toString();
-      toast.error(errormsg);
+      // toast.error(errormsg);
     } finally {
       setLoading(false);
     }

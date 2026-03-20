@@ -5,6 +5,7 @@ import { QuestionLogModel } from "../../models/QuestionLog.js";
 
 import sessionSummaryEngine from "./sessionSummary.engine.js";
 import { SessionSummaryInput } from "../../types/sessionSummary.types.js";
+import { AppError } from "../../utils/AppError.js";
  const generateSessionSummary = async (sessionId: string) => {
 
   const session = await prisma.interviewSession.findUnique({
@@ -16,11 +17,14 @@ import { SessionSummaryInput } from "../../types/sessionSummary.types.js";
   })
 
   if (!session) {
-    throw new Error("Interview session not found")
-  }
+throw new AppError(
+    "Interview session not found",
+    404,
+    "SESSION_NOT_FOUND"
+  );  }
 
   if (session.sessionSummary) {
-    throw new Error("Session summary already generated")
+    throw new AppError("Session summary already generated",400,"SESSION-EXIST")
   }
 
   // Fetch Mongo logs
@@ -28,8 +32,11 @@ import { SessionSummaryInput } from "../../types/sessionSummary.types.js";
   const questionLogs = await QuestionLogModel.find({ sessionId }).lean()
 
   if (!evaluationLogs.length) {
-    throw new Error("No evaluation logs found")
-  }
+throw new AppError(
+    "Interview not completed yet. No evaluation logs found",
+    400,
+    "EVALUATION_MISSING"
+  );  }
 
   const evaluations = evaluationLogs.map((e: any) => ({
     technical: e.technical,

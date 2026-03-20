@@ -28,7 +28,7 @@ const showError = (error: any) => {
 };
 
 // -----------------------------
-// 🔥 Refresh control (IMPORTANT)
+// 🔥 Refresh control
 // -----------------------------
 let isRefreshing = false;
 let refreshPromise: Promise<any> | null = null;
@@ -42,13 +42,15 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // 🚨 Only handle 401 (not login/refresh)
-    if (
-      error.response?.status === 401 &&
-      !originalRequest?.url?.includes("/auth/login") &&
-      !originalRequest?.url?.includes("/auth/refresh")
-    ) {
-      // Prevent infinite loop
+    const url = (originalRequest?.url || "").toLowerCase();
+
+    const isAuthRoute =
+      url.includes("auth/login") ||
+      url.includes("auth/refresh") ||
+      url.includes("auth/logout");
+
+    // 🚨 Handle only NON-auth 401 errors
+    if (error.response?.status === 401 && !isAuthRoute) {
       if (originalRequest?._retry) {
         return Promise.reject(error);
       }
@@ -56,11 +58,10 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // 🔒 If already refreshing → wait
+        // 🔒 Wait if refresh already happening
         if (isRefreshing && refreshPromise) {
           await refreshPromise;
         } else {
-          // 🔥 Start refresh
           isRefreshing = true;
 
           refreshPromise = axios.post(
@@ -73,16 +74,14 @@ apiClient.interceptors.response.use(
 
           const newToken = res.data.Data.accessToken;
 
-          // Save token
           tokenServices.setToken(newToken);
 
-          // Set default header
           apiClient.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${newToken}`;
         }
 
-        // Attach new token to original request
+        // 🔁 Retry original request
         const token = tokenServices.getToken();
         if (token) {
           originalRequest.headers = originalRequest.headers || {};
@@ -95,7 +94,7 @@ apiClient.interceptors.response.use(
         tokenServices.clearToken();
         tokenServices.triggerLogout();
 
-        showError(refreshError);
+        toast.error("Session expired, please login again");
 
         return Promise.reject(refreshError);
       } finally {
@@ -104,8 +103,17 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Normal errors
-    showError(error);
+    // 🔥 IMPORTANT: Do NOT override login errors
+    if (isAuthRoute) {
+      showError(error);
+      return Promise.reject(error);
+    }
+
+    // 🔥 Other errors
+    if (error.response?.status !== 401) {
+      showError(error);
+    }
+
     return Promise.reject(error);
   }
 );
