@@ -215,15 +215,16 @@ export default function Resumes() {
                 transition
                 "
               >
-                {!analysis[resume.id] ? (
-    <div className="text-xs px-3 py-2 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-      ⚠️ Resume not analyzed yet. Click "Analyze" to continue.
-    </div>
-  ) : (
-    <div className="text-xs px-3 py-2 rounded-md bg-green-500/10 text-green-400 border border-green-500/20">
-      ✅ Resume analysis completed. Next: Upload JD & start interview.
-    </div>
-  )}
+                {!resume.parsedData ? (
+                  <div className="text-xs px-3 py-2 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                    ⚠️ Resume not analyzed yet. Click "Analyze" to continue.
+                  </div>
+                ) : (
+                  <div className="text-xs px-3 py-2 rounded-md bg-green-500/10 text-green-400 border border-green-500/20">
+                    ✅ Resume analysis completed. Next: Upload JD & start
+                    interview.
+                  </div>
+                )}
                 <div className="flex items-center gap-2 font-medium text-samurai-text dark:text-white mb-3">
                   <FileText
                     size={18}

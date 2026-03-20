@@ -3,6 +3,7 @@ export interface Resume {
   title: string;
   createdAt: string;
   updatedAt?: string;
+  parsedData?:string;
 }
 
 export interface UploadResumeResponse {

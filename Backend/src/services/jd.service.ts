@@ -34,6 +34,7 @@ async function getUserJDs(userId: string) {
       title: true,
       createdAt: true,
       updatedAt: true,
+      parsedData: true,
     },
   });
 
@@ -49,9 +50,10 @@ async function getJDById(userId: string, JDId: string) {
     select: {
       id: true,
       title: true,
-      rawText:true,
+      rawText: true,
       createdAt: true,
       updatedAt: true,
+      parsedData: true,
     },
   });
   return jdData;
@@ -71,7 +73,6 @@ async function updateJD(userId: string, JDId: string, data: UpdateJDParams) {
   const jdData = await prisma.jobDescription.update({
     where: {
       id: JDId,
-      
     },
     data: data,
     select: {
@@ -88,15 +89,15 @@ async function deleteJD(userId: string, JDId: string) {
   const existJDData = await prisma.jobDescription.findFirst({
     where: {
       id: JDId,
-         userId: userId,
+      userId: userId,
     },
   });
   if (!existJDData) {
     throw new Error("JD not found");
   }
 
-   const sessionCount = await prisma.interviewSession.count({
-    where: { jdId:JDId },
+  const sessionCount = await prisma.interviewSession.count({
+    where: { jdId: JDId },
   });
 
   if (sessionCount > 0) {
@@ -108,7 +109,6 @@ async function deleteJD(userId: string, JDId: string) {
   }
   const jdData = await prisma.jobDescription.delete({
     where: {
-   
       id: JDId,
     },
   });
