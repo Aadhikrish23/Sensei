@@ -70,7 +70,7 @@ async function deleteResumeService(resumeId: string, userId: string) {
   const sessionCount = await prisma.interviewSession.count({
     where: { resumeId },
   });
-  console.error("sessionCount",sessionCount);
+  console.error("sessionCount", sessionCount);
   if (sessionCount > 0) {
     throw new AppError(
       ` Cannot Delete , This resume is used in ${sessionCount} interview session(s)`,
@@ -97,6 +97,7 @@ async function getUserResumes(userId: string) {
       title: true,
       createdAt: true,
       updatedAt: true,
+      parsedData: true,
     },
   });
 
@@ -113,6 +114,7 @@ async function getUserResumeById(userId: string, resumeId: string) {
       title: true,
       createdAt: true,
       updatedAt: true,
+      parsedData: true,
     },
   });
 

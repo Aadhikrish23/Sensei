@@ -3,6 +3,7 @@ export interface JobDescription {
   title: string;
   createdAt: string;
   updatedAt?: string;
+  parsedData?:string;
 }
 
 export interface CreateJDRequest {
