@@ -1,4 +1,4 @@
-# Sensei – AI Interview Training Platform
+# Sensei ~ AI Interview Training Platform
 
 <p align="center">
 AI-powered platform for practicing technical interviews with adaptive questioning, resume analysis, and performance insights.
