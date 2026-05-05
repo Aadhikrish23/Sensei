@@ -501,6 +501,11 @@ async function getAllSession(userid: string) {
       createdAt: true,
       updatedAt: true,
       endedAt: true,
+      sessionSummary:{
+        select:{
+          overallScore:true
+        }
+      }
     },
   });
 
@@ -524,6 +529,11 @@ async function getSessionById(userid: string, sessionId: string) {
       createdAt: true,
       updatedAt: true,
       endedAt: true,
+      sessionSummary:{
+        select:{
+          overallScore:true
+        }
+      }
     },
   });
   const latestQuestion = await questionMongoRepo.getLatestQuestion(sessionId);
