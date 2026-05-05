@@ -7,13 +7,14 @@ import { AnswerLogModel } from "../models/AnswerLog.js";
 import { EvaluationLogModel } from "../models/EvaluationLog.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
+import sessionSummaryService from "../services/session-summary/sessionSummary.service.js";
 
  const downloadInterviewReportPDF = asyncHandler(async (
   req: Request,
   res: Response,
 ) => {
   const sessionId = req.params.sessionId as string;
-  const session = await prisma.interviewSession.findUnique({
+  let session = await prisma.interviewSession.findUnique({
     where: { id: sessionId },
     include: { sessionSummary: true },
   });
@@ -21,9 +22,27 @@ import { AppError } from "../utils/AppError.js";
   if (!session || !session.finalReport) {
     throw new AppError("Report not found" ,400);
   }
-   if (!session.sessionSummary) {
+  if (!session.sessionSummary) {
+    try {
+      await sessionSummaryService.generateSessionSummary(sessionId);
+
+      // Re-fetch after generating
+      session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+        include: { sessionSummary: true },
+      });
+    } catch (err: any) {
+      // If it still fails (e.g. no eval logs), throw a clear error
+      throw new AppError(
+        `Cannot generate PDF: ${err.message}`,
+        400
+      );
+    }
+  }
+   if (!session?.sessionSummary) {
     throw new AppError("Session summary not found. Please complete the interview first.", 400);
   }
+  
   const questions = await QuestionLogModel.find({ sessionId });
   const answers = await AnswerLogModel.find({ sessionId });
   const evaluations = await EvaluationLogModel.find({ sessionId });

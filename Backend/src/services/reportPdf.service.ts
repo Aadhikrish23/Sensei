@@ -67,7 +67,7 @@ const s = summary ?? {
   <h2>Candidate Score</h2>
 
   <div class="card">
-  Overall Score: ${summary.overallScore}
+  Overall Score: ${s.overallScore}
   </div>
 
   </div>
