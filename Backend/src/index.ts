@@ -135,7 +135,7 @@ const authLimiter = rateLimit({
 |--------------------------------------------------------------------------
 */
 const aiLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
+  windowMs: 1 * 60 * 1000,
   max: 10,
   skip: (req) => req.method === "OPTIONS",
 
