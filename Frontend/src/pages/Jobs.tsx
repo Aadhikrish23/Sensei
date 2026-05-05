@@ -99,6 +99,7 @@ export default function Jobs() {
     }));
 
     setActiveAnalysis(jdId);
+    fetchJobs();
 
   } catch (error: any) {
 

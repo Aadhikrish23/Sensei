@@ -33,7 +33,7 @@ export default function Resumes() {
 
   useEffect(() => {
     fetchResumes();
-  }, []);
+  }, [resumes]);
 
   /* ---------------- UPLOAD ---------------- */
 
@@ -83,6 +83,8 @@ export default function Resumes() {
       }));
 
       setActiveAnalysis(resumeId);
+
+      fetchResumes();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Resume analysis failed", {
         id: toastId,

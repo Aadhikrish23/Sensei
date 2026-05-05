@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 const ATLAS_URI = process.env.LOCAL_URL_Mongo;
-const PORT = process.env.PORT||5000;
 
 const connectMongo = async () => {
 
