@@ -36,7 +36,7 @@ export default function Reports() {
 
       setReports((prev) => ({
         ...prev,
-        [sessionId]: report,
+        [sessionId]: report.data,
       }));
     }
 
