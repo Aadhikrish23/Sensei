@@ -36,10 +36,10 @@ Rules:
 - Output JSON only
 """
 
-def generate_final_report(data):
+def generate_final_report(data, request):
 
     prompt = build_prompt(data)
 
-    response = call_openai(prompt)
+    response = call_openai(prompt, request)
 
     return response

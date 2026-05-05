@@ -47,5 +47,5 @@ async def generate_next_question_endpoint(request_data: GenerateNextQuestionRequ
 
 @router.post("/final-report")
 async def final_report(data: dict, request: Request):
-    report = generate_final_report(data)
+    report = generate_final_report(data,request)
     return report
