@@ -16,8 +16,8 @@ const completeInterviewSession = asyncHandler(
   },
 );
 const allsessions = asyncHandler(async (req: Request, res: Response) => {
-  const sessionId = req.params.sessionId;
-  const summary = await interviewService.getAllSession;
+ 
+  const summary = interviewService.getAllSession;
   return res.status(200).json({
     status: "SUCCESS",
     data: summary,

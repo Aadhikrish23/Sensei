@@ -6,7 +6,13 @@ export const generateInterviewReportPDF = async (
   transcripts: any[],
   sessionId: string
 ) => {
-
+const s = summary ?? {
+    overallScore: 0,
+    technicalAvg: 0,
+    depthAvg: 0,
+    communicationAvg: 0,
+    relevanceAvg: 0,
+  };
   const html = `
   <html>
   <head>
@@ -71,10 +77,11 @@ export const generateInterviewReportPDF = async (
   <h2>Skill Breakdown</h2>
 
   <ul>
-  <li>Technical: ${summary.technicalAvg}</li>
-  <li>Depth: ${summary.depthAvg}</li>
-  <li>Communication: ${summary.communicationAvg}</li>
-  <li>Relevance: ${summary.relevanceAvg}</li>
+  <li>Technical: ${s.technicalAvg}</li>
+  <li>Depth: ${s.depthAvg}</li>
+  <li>Communication: ${s.communicationAvg}</li>
+  <li>Relevance: ${s.relevanceAvg}</li>
+  <li> data: [${s.technicalAvg}, ${s.depthAvg}, ${s.communicationAvg}, ${s.relevanceAvg}]</li>
   </ul>
 
   </div>

@@ -21,7 +21,9 @@ import { AppError } from "../utils/AppError.js";
   if (!session || !session.finalReport) {
     throw new AppError("Report not found" ,400);
   }
-
+   if (!session.sessionSummary) {
+    throw new AppError("Session summary not found. Please complete the interview first.", 400);
+  }
   const questions = await QuestionLogModel.find({ sessionId });
   const answers = await AnswerLogModel.find({ sessionId });
   const evaluations = await EvaluationLogModel.find({ sessionId });
