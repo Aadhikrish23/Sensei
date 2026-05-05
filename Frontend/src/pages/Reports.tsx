@@ -36,7 +36,7 @@ export default function Reports() {
 
       setReports((prev) => ({
         ...prev,
-        [sessionId]: report.data,
+        [sessionId]: report,
       }));
     }
 
@@ -161,7 +161,7 @@ export default function Reports() {
       <div>
         <p className="font-semibold mb-1">Summary</p>
         <p className="text-sm">
-          {reports[activeReport].summary}
+          {reports[activeReport]?.candidate_summary}
         </p>
       </div>
 
